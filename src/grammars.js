@@ -38,15 +38,22 @@ export class GrammarModel {
 
   /**
    * Setup the grammar for a particular document model.
+   *
+   * Returns a Promise that can be waited upon to indicate that the setup is completed.
    */
   setup () {
     // setup akn to text transform
-    const self = this;
-    // TODO: don't use jquery
-    $.get(this.xslUrl).then(function (xml) {
-      const textTransform = new XSLTProcessor();
-      textTransform.importStylesheet(xml);
-      self.textTransform = textTransform;
+    return new Promise(resolve => {
+      fetch(new Request(this.xslUrl)).then(response => {
+        if (response.ok) {
+          response.text().then(text => {
+            const xml = new DOMParser().parseFromString(text, 'text/xml');
+            this.textTransform = new XSLTProcessor();
+            this.textTransform.importStylesheet(xml);
+            resolve();
+          })
+        }
+      });
     });
   }
 
