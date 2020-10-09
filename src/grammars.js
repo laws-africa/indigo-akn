@@ -1,3 +1,5 @@
+import { tableToAkn } from "./html";
+
 /**
  * Base class for grammar models.
  */
@@ -78,7 +80,7 @@ export class GrammarModel {
    *
    * * format.bold
    * * format.italics
-   * * format.remork
+   * * format.remark
    * * insert.schedule
    * * insert.table
    *
@@ -107,6 +109,7 @@ export class GrammarModel {
 
   insertRemark (editor, remark) {
     const sel = editor.getSelection();
+    editor.pushUndoStop();
     editor.executeEdits(this.language_id, [{
       identifier: 'insert.remark',
       range: sel,
@@ -145,12 +148,12 @@ export class GrammarModel {
       image = this.markupImage('', filename);
     }
 
+    editor.pushUndoStop();
     editor.executeEdits(this.language_id, [{
       identifier: 'insert.image',
       range: sel,
       text: image,
     }]);
-
     editor.pushUndoStop();
   }
 
@@ -163,6 +166,7 @@ export class GrammarModel {
     const line = editor.getModel().getLineContent(sel.startLineNumber);
 
     for (let match of line.matchAll(regexp)) {
+      // is the cursor inside the match (which goes from match.index to match[0].length)?
       if (match.index <= sel.startColumn && sel.startColumn <= match.index + match[0].length) {
         return match;
       }
@@ -189,7 +193,7 @@ export class GrammarModel {
           editor.trigger(this.language_id, 'undo');
 
           for (let i = 0; i < tables.length; i++) {
-            toPaste.push(window.indigoAkn.tableToAkn(tables[i]));
+            toPaste.push(tableToAkn(tables[i]));
           }
 
           this.pasteTables(editor, toPaste);
@@ -208,6 +212,7 @@ export class GrammarModel {
       text.push(this.xmlToText(tables[i]));
     }
 
+    editor.pushUndoStop();
     editor.executeEdits(this.language_id, [{
       identifier: 'insert.table',
       range: editor.getSelection(),
