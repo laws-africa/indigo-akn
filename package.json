@@ -1,0 +1,25 @@
+{
+  "name": "@laws-africa/indigo-akn",
+  "version": "1.0.0",
+  "description": "Akoma Ntoso support libraries for the Indigo platform.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laws-africa/indigo-akn.git"
+  },
+  "author": "Greg Kempe <greg@laws.africa>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/laws-africa/indigo-akn/issues"
+  },
+  "homepage": "https://github.com/laws-africa/indigo-akn#readme",
+  "dependencies": {
+    "he": "^1.2.0"
+  },
+	"publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
