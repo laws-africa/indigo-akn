@@ -234,7 +234,7 @@ export class GrammarModel {
  * Expands the selection if there is selected text, or moves
  * the selection between pre and post if there is nothing selected.
  */
-export function wrapSelection (editor, id, pre, post) {
+export function wrapSelection (editor, edit_source, id, pre, post) {
   const sel = editor.getSelection();
   const text = editor.getModel().getValueInRange(sel);
   const op = {
@@ -248,5 +248,5 @@ export function wrapSelection (editor, id, pre, post) {
       sel.setEndPosition(sel.startLineNumber, sel.startColumn + pre.length)
         .setStartPosition(sel.startLineNumber, sel.startColumn + pre.length)
       : sel.setEndPosition(sel.endLineNumber, sel.endColumn + pre.length + post.length));
-  editor.executeEdits('indigo', [op], [cursor]);
+  editor.executeEdits(edit_source, [op], [cursor]);
 }
