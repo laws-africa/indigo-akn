@@ -240,7 +240,6 @@ export function wrapSelection (editor, id, pre, post) {
   const op = {
     identifier: id,
     range: sel,
-    forceMoveMarkers: false,
     text: pre + text + post
   };
   // either extend the selection, or place cursor inside the tags
