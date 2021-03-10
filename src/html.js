@@ -107,5 +107,3 @@ export function tableToAkn (table) {
 
   return xml;
 }
-
-

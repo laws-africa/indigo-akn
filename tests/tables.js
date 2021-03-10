@@ -62,7 +62,7 @@ describe('tableToAkn', () => {
 <th class="akn--text-center" style="width: 21.4684%;">
 <span class="akn-p">heading 1</span>
 </th>
-<th style="width: 78.3457%; foo: 'bar'">
+<th style="width: 78.3457%; font-size: 13px;">
 <span class="akn-p">heading 2</span>
 </th>
 </tr>
