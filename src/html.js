@@ -69,7 +69,7 @@ export function tableToAkn (table) {
 
   function cleanAttributes(elem) {
     elem.getAttributeNames().forEach(name => {
-      if (name === 'style' || name.indexOf(':') > -1) {
+      if (name.indexOf(':') > -1) {
         elem.removeAttribute(name);
       }
     });
