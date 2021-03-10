@@ -79,7 +79,7 @@ export function tableToAkn (table) {
 
   function cleanAttributes(elem) {
     elem.getAttributeNames().forEach(name => {
-      if (name === 'style' && (elem.tagName === 'TD' || elem.tagName === 'TD')) {
+      if (name === 'style' && (elem.localName === 'td' || elem.localName === 'th')) {
         keepOnlyWidth(elem);
       } else if (name === 'style' || name.indexOf(':') > -1) {
         elem.removeAttribute(name);
