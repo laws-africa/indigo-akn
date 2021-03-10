@@ -52,7 +52,7 @@ describe('tableToAkn', () => {
 `);
     });
 
-    it('should discard unwanted Word styles', () => {
+    it('should discard unwanted styles (everything other than width)', () => {
       const domparser = new DOMParser();
       const xmlserializer = new XMLSerializer();
       const table_html_string = `
