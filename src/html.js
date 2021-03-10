@@ -67,9 +67,21 @@ export function tableToAkn (table) {
     }
   }
 
+  function keepOnlyWidth(elem) {
+    let styleObj = elem.style;
+    for (let i = styleObj.length; i--;) {
+      let nameString = styleObj[i];
+      if (nameString !== 'width') {
+        styleObj.removeProperty(nameString);
+      }
+    }
+  }
+
   function cleanAttributes(elem) {
     elem.getAttributeNames().forEach(name => {
-      if (name.indexOf(':') > -1) {
+      if (name === 'style' && (elem.tagName === 'TD' || elem.tagName === 'TD')) {
+        keepOnlyWidth(elem);
+      } else if (name === 'style' || name.indexOf(':') > -1) {
         elem.removeAttribute(name);
       }
     });
