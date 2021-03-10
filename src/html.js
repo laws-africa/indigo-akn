@@ -69,7 +69,7 @@ export function tableToAkn (table) {
 
   function keepOnlyWidth(elem) {
     let styleObj = elem.style;
-    for (let i = styleObj.length; i--;) {
+    for (let i = styleObj.length; i >= 0; i--) {
       let nameString = styleObj[i];
       if (nameString !== 'width') {
         styleObj.removeProperty(nameString);
