@@ -133,7 +133,7 @@ describe('tableToAkn', () => {
       const table_akn_string = xmlserializer.serializeToString(table_akn);
       expect(table_akn_string).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
 <th><p>heading <sup>1</sup></p></th>
-<th><p>heading <sup>2</sup></p></th>
+<th><p>heading <sub>2</sub></p></th>
 </tr><tr>
 <td><p>cell 1</p></td>
 <td><p>cell 2</p></td>
