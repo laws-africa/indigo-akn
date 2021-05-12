@@ -54,7 +54,7 @@ export const HTML_TO_AKN_XSL = `
     <eol/>
   </xsl:template>
 
-  <xsl:template match="html:b | html:i">
+  <xsl:template match="html:b | html:i | html:sup | html:sub">
     <xsl:element name="{name(.)}">
       <xsl:apply-templates />
     </xsl:element>
