@@ -102,4 +102,43 @@ describe('tableToAkn', () => {
     });
 
   });
+
+  it('should preserve superscript and subscript tags', () => {
+      const domparser = new DOMParser();
+      const xmlserializer = new XMLSerializer();
+      const table_html_string = `
+<table id="hcontainer_1__table_2" data-eid="hcontainer_1__table_2">
+<tbody>
+<tr>
+<th>
+<span class="akn-p">heading <sup>1</sup></span>
+</th>
+<th>
+<span class="akn-p">heading <sub>2</sub></span>
+</th>
+</tr>
+<tr>
+<td>
+<span class="akn-p">cell 1</span>
+</td>
+<td>
+<span class="akn-p">cell 2</span>
+</td>
+</tr>
+</tbody>
+</table>
+`;
+      const table_html = domparser.parseFromString(table_html_string, 'text/html');
+      const table_akn = tableToAkn(table_html);
+      const table_akn_string = xmlserializer.serializeToString(table_akn);
+      expect(table_akn_string).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
+<th><p>heading <sup>1</sup></p></th>
+<th><p>heading <sup>2</sup></p></th>
+</tr><tr>
+<td><p>cell 1</p></td>
+<td><p>cell 2</p></td>
+</tr></table>
+`);
+  });
+
 });
