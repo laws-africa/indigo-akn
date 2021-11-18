@@ -1,4 +1,5 @@
 import { EidRewriterBluebell } from '../src/eids.js';
+import { EidRewriterSlaw } from '../src/eids.js';
 import { expect } from 'chai';
 
 describe('eIdRewriterBluebell', () => {
@@ -835,6 +836,1535 @@ describe('eIdRewriterBluebell', () => {
       const doc = new DOMParser().parseFromString(xml, "text/xml");
       new EidRewriterBluebell().rewriteAllEids(doc);
       expect(new XMLSerializer().serializeToString(doc)).to.equal(xml);
+    });
+  });
+  describe('#cleanNum()', () => {
+    it('should clean nums correctly', () => {
+      const r = new EidRewriterBluebell();
+
+      expect(r.cleanNum("")).to.equal("");
+      expect(r.cleanNum(" ")).to.equal("");
+      expect(r.cleanNum("( )")).to.equal("");
+      expect(r.cleanNum("(123.4-5)")).to.equal("123-4-5");
+      expect(r.cleanNum("(312.32.7)")).to.equal("312-32-7");
+      expect(r.cleanNum("(312_32_7)")).to.equal("312-32-7");
+      expect(r.cleanNum("(6)")).to.equal("6");
+      expect(r.cleanNum("[16]")).to.equal("16");
+      expect(r.cleanNum("(i)")).to.equal("i");
+      expect(r.cleanNum("[i]")).to.equal("i");
+      expect(r.cleanNum("(2bis)")).to.equal("2bis");
+      expect(r.cleanNum('"1.2.')).to.equal("1-2");
+      expect(r.cleanNum("1.2.")).to.equal("1-2");
+      expect(r.cleanNum("“2.3")).to.equal("2-3");
+      expect(r.cleanNum("2,3")).to.equal("2-3");
+      expect(r.cleanNum("2,3, 4,")).to.equal("2-3-4");
+      expect(r.cleanNum("3a bis")).to.equal("3abis");
+      expect(r.cleanNum("3é")).to.equal("3é");
+      expect(r.cleanNum(" -3a--4,9")).to.equal("3a-4-9");
+    });
+
+    it('should handle non-arabic numerals', () => {
+      const r = new EidRewriterBluebell();
+      // hebrew aleph
+      expect(r.cleanNum("(א)")).to.equal("א");
+      // chinese 3
+      expect(r.cleanNum("(三)")).to.equal("三");
+    });
+  });
+});
+
+describe('eIdRewriterSlaw', () => {
+  describe('#rewriteAllEids()', () => {
+    it('should not change a document with correct eids', () => {
+      const xml = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act contains="originalVersion" name="act">
+    <meta>
+      <identification source="#slaw">
+        <FRBRWork>
+          <FRBRthis value="/za/act/1980/01/main"/>
+          <FRBRuri value="/za/act/1980/01"/>
+          <FRBRalias value="Short Title" name="title"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRcountry value="za"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="2021-11-18" name="Generation"/>
+          <FRBRauthor href="#slaw"/>
+        </FRBRManifestation>
+      </identification>
+      <references source="#this">
+        <TLCOrganization eId="slaw" href="https://github.com/longhotsummer/slaw" showAs="Slaw"/>
+        <TLCOrganization eId="council" href="/ontology/organization/za/council" showAs="Council"/>
+      </references>
+    </meta>
+    <body>
+      <chapter eId="chp_1">
+        <num>1</num>
+        <part eId="chp_1__part_A">
+          <num>A</num>
+          <section eId="sec_1">
+            <num>1.</num>
+            <heading>Heading</heading>
+            <hcontainer eId="sec_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Section 1 content.</p>
+              </content>
+            </hcontainer>
+            <crossHeading eId="sec_1__crossHeading_1">A cross head</crossHeading>
+            <subsection eId="sec_1__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>Regular old subsection.</p>
+                <blockList eId="sec_1__subsec_1__list_1">
+                  <listIntroduction>Subsection 1</listIntroduction>
+                  <item eId="sec_1__subsec_1__list_1__item_a">
+                    <num>(a)</num>
+                    <blockList eId="sec_1__subsec_1__list_1__item_a__list_1">
+                      <listIntroduction>paragraph 1</listIntroduction>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_i">
+                        <num>(i)</num>
+                        <p>subparagraph 1</p>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii">
+                        <num>(ii)</num>
+                        <blockList eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1">
+                          <listIntroduction>subparagraph 2</listIntroduction>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_A">
+                            <num>(A)</num>
+                            <p>item a</p>
+                          </item>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_B">
+                            <num>(B)</num>
+                            <p>item b</p>
+                          </item>
+                        </blockList>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_iii">
+                        <num>(iii)</num>
+                        <p>subparagraph 3</p>
+                      </item>
+                    </blockList>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_aA">
+                    <num>(aA)</num>
+                    <p>inserted para aA</p>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_b">
+                    <num>(b)</num>
+                    <p>paragraph 2</p>
+                  </item>
+                </blockList>
+              </content>
+            </subsection>
+            <subsection eId="sec_1__subsec_3A">
+              <num>(3A)</num>
+              <content>
+                <p>New subsection 3A (2 and 3 deleted), with a standalone image following:</p>
+                <p>
+                  <remark status="editorial">[section 2 has been repealed]</remark>
+                </p>
+              </content>
+            </subsection>
+          </section>
+          <section eId="sec_3">
+            <num>3.</num>
+            <heading/>
+            <hcontainer eId="sec_3__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Has commenced</p>
+              </content>
+            </hcontainer>
+            <subsection eId="sec_3__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>hasn't.</p>
+              </content>
+            </subsection>
+            <subsection eId="sec_3__subsec_2">
+              <num>(2)</num>
+              <content>
+                <p>has.</p>
+              </content>
+            </subsection>
+            <subsection eId="sec_3__subsec_3">
+              <num>(3)</num>
+              <content>
+                <p>added</p>
+              </content>
+            </subsection>
+          </section>
+        </part>
+        <part eId="chp_1__part_B">
+          <num>B</num>
+          <section eId="sec_5">
+            <num>5.</num>
+            <heading/>
+            <hcontainer eId="sec_5__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Fifth section, added later, commences on insertion.</p>
+                <table eId="sec_5__hcontainer_1__table_1">
+                  <tr>
+                    <th style="width: 80.8402%;">
+                      <p>heading 1</p>
+                    </th>
+                    <th style="width: 18.9549%;">
+                      <p>heading 2</p>
+                    </th>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <p>cells 1 and 2</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 3</p>
+                    </td>
+                    <td rowspan="2" colspan="1" style="width:18.9549%">
+                      <p>merged the other way</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 5?</p>
+                    </td>
+                  </tr>
+                </table>
+              </content>
+            </hcontainer>
+          </section>
+        </part>
+      </chapter>
+      <chapter eId="chp_2">
+        <num>2</num>
+        <section eId="sec_6">
+          <num>6.</num>
+          <heading/>
+          <hcontainer eId="sec_6__hcontainer_1" name="hcontainer">
+            <content>
+              <p>Sixth section, also added later but doesn't commence.</p>
+            </content>
+          </hcontainer>
+        </section>
+        <section eId="sec_7">
+          <num>7.</num>
+          <heading/>
+          <subsection eId="sec_7__subsec_1">
+            <num>(1)</num>
+            <content>
+              <p>first</p>
+            </content>
+          </subsection>
+          <subsection eId="sec_7__subsec_2">
+            <num>(2)</num>
+            <content>
+              <p>second</p>
+              <p>Seventh section, also added later and also commences in the future, with section 3.</p>
+            </content>
+          </subsection>
+        </section>
+      </chapter>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Schedule</heading>
+        <subheading>Laws Repealed</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#slaw">
+              <FRBRWork>
+                <FRBRthis value="/za/act/1980/01/!schedule"/>
+                <FRBRuri value="/za/act/1980/01"/>
+                <FRBRalias value="Schedule"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRcountry value="za"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="2021-11-18" name="Generation"/>
+                <FRBRauthor href="#slaw"/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <hcontainer eId="att_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>These laws are repealed:</p>
+              </content>
+            </hcontainer>
+            <paragraph eId="att_1__para_1">
+              <num>1.</num>
+              <content>
+                <p>This one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_2">
+              <num>2.</num>
+              <content>
+                <p>That one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_3">
+              <num>3.</num>
+              <content>
+                <p>This other one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_4">
+              <num>4.</num>
+              <content>
+                <p>And, this one</p>
+              </content>
+            </paragraph>
+            <section eId="att_1__sec_7">
+              <num>7.</num>
+              <heading/>
+              <subsection eId="att_1__sec_7__subsec_1">
+                <num>(1)</num>
+                <content>
+                  <p>first</p>
+                </content>
+              </subsection>
+              <subsection eId="att_1__sec_7__subsec_2">
+                <num>(2)</num>
+                <content>
+                  <p>second</p>
+                  <p>Seventh section, also added later and also commences in the future, with section 3.</p>
+                </content>
+              </subsection>
+            </section>
+          </mainBody>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`;
+      const doc = new DOMParser().parseFromString(xml, "text/xml");
+      new EidRewriterSlaw().rewriteAllEids(doc);
+      expect(new XMLSerializer().serializeToString(doc)).to.equal(xml);
+    });
+    it('should correct duplicate section eIds', () => {
+      const xmlIn = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act contains="originalVersion" name="act">
+    <meta>
+      <identification source="#slaw">
+        <FRBRWork>
+          <FRBRthis value="/za/act/1980/01/main"/>
+          <FRBRuri value="/za/act/1980/01"/>
+          <FRBRalias value="Short Title" name="title"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRcountry value="za"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="2021-11-18" name="Generation"/>
+          <FRBRauthor href="#slaw"/>
+        </FRBRManifestation>
+      </identification>
+      <references source="#this">
+        <TLCOrganization eId="slaw" href="https://github.com/longhotsummer/slaw" showAs="Slaw"/>
+        <TLCOrganization eId="council" href="/ontology/organization/za/council" showAs="Council"/>
+      </references>
+    </meta>
+    <body>
+      <chapter eId="chp_1">
+        <num>1</num>
+        <part eId="chp_1__part_A">
+          <num>A</num>
+          <section eId="sec_1">
+            <num>1.</num>
+            <heading>First section 1</heading>
+            <hcontainer eId="sec_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Section 1 content.</p>
+              </content>
+            </hcontainer>
+            <crossHeading eId="sec_1__crossHeading_1">A cross head</crossHeading>
+            <subsection eId="sec_1__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>Regular old subsection.</p>
+                <blockList eId="sec_1__subsec_1__list_1">
+                  <listIntroduction>Subsection 1</listIntroduction>
+                  <item eId="sec_1__subsec_1__list_1__item_a">
+                    <num>(a)</num>
+                    <blockList eId="sec_1__subsec_1__list_1__item_a__list_1">
+                      <listIntroduction>paragraph 1</listIntroduction>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_i">
+                        <num>(i)</num>
+                        <p>subparagraph 1</p>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii">
+                        <num>(ii)</num>
+                        <blockList eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1">
+                          <listIntroduction>subparagraph 2</listIntroduction>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_A">
+                            <num>(A)</num>
+                            <p>item a</p>
+                          </item>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_B">
+                            <num>(B)</num>
+                            <p>item b</p>
+                          </item>
+                        </blockList>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_iii">
+                        <num>(iii)</num>
+                        <p>subparagraph 3</p>
+                      </item>
+                    </blockList>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_aA">
+                    <num>(aA)</num>
+                    <p>inserted para aA</p>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_b">
+                    <num>(b)</num>
+                    <p>paragraph 2</p>
+                  </item>
+                </blockList>
+              </content>
+            </subsection>
+            <subsection eId="sec_1__subsec_3A">
+              <num>(3A)</num>
+              <content>
+                <p>New subsection 3A (2 and 3 deleted), with a standalone image following:</p>
+                <p>
+                  <remark status="editorial">[section 2 has been repealed]</remark>
+                </p>
+              </content>
+            </subsection>
+          </section>
+          <section eId="sec_1">
+            <num>1.</num>
+            <heading>Second section 1</heading>
+            <hcontainer eId="sec_1__hcontainer_2" name="hcontainer">
+              <content>
+                <p>Section 1 content.</p>
+              </content>
+            </hcontainer>
+            <crossHeading eId="sec_1__crossHeading_2">A cross head</crossHeading>
+            <subsection eId="sec_1__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>Regular old subsection.</p>
+                <blockList eId="sec_1__subsec_1__list_1">
+                  <listIntroduction>Subsection 1</listIntroduction>
+                  <item eId="sec_1__subsec_1__list_1__item_a">
+                    <num>(a)</num>
+                    <blockList eId="sec_1__subsec_1__list_1__item_a__list_1">
+                      <listIntroduction>paragraph 1</listIntroduction>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_i">
+                        <num>(i)</num>
+                        <p>subparagraph 1</p>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii">
+                        <num>(ii)</num>
+                        <blockList eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1">
+                          <listIntroduction>subparagraph 2</listIntroduction>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_A">
+                            <num>(A)</num>
+                            <p>item a</p>
+                          </item>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_B">
+                            <num>(B)</num>
+                            <p>item b</p>
+                          </item>
+                        </blockList>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_iii">
+                        <num>(iii)</num>
+                        <p>subparagraph 3</p>
+                      </item>
+                    </blockList>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_aA">
+                    <num>(aA)</num>
+                    <p>inserted para aA</p>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_b">
+                    <num>(b)</num>
+                    <p>paragraph 2</p>
+                  </item>
+                </blockList>
+              </content>
+            </subsection>
+            <subsection eId="sec_1__subsec_3A">
+              <num>(3A)</num>
+              <content>
+                <p>New subsection 3A (2 and 3 deleted), with a standalone image following:</p>
+                <p>
+                  <remark status="editorial">[section 2 has been repealed]</remark>
+                </p>
+              </content>
+            </subsection>
+          </section>
+          <section eId="sec_3">
+            <num>3.</num>
+            <heading/>
+            <hcontainer eId="sec_3__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Has commenced</p>
+              </content>
+            </hcontainer>
+            <subsection eId="sec_3__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>hasn't.</p>
+              </content>
+            </subsection>
+            <subsection eId="sec_3__subsec_2">
+              <num>(2)</num>
+              <content>
+                <p>has.</p>
+              </content>
+            </subsection>
+            <subsection eId="sec_3__subsec_3">
+              <num>(3)</num>
+              <content>
+                <p>added</p>
+              </content>
+            </subsection>
+          </section>
+        </part>
+        <part eId="chp_1__part_B">
+          <num>B</num>
+          <section eId="sec_5">
+            <num>5.</num>
+            <heading/>
+            <hcontainer eId="sec_5__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Fifth section, added later, commences on insertion.</p>
+                <table eId="sec_5__hcontainer_1__table_1">
+                  <tr>
+                    <th style="width: 80.8402%;">
+                      <p>heading 1</p>
+                    </th>
+                    <th style="width: 18.9549%;">
+                      <p>heading 2</p>
+                    </th>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <p>cells 1 and 2</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 3</p>
+                    </td>
+                    <td rowspan="2" colspan="1" style="width:18.9549%">
+                      <p>merged the other way</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 5?</p>
+                    </td>
+                  </tr>
+                </table>
+              </content>
+            </hcontainer>
+          </section>
+        </part>
+      </chapter>
+      <chapter eId="chp_2">
+        <num>2</num>
+        <section eId="sec_6">
+          <num>6.</num>
+          <heading/>
+          <hcontainer eId="sec_6__hcontainer_1" name="hcontainer">
+            <content>
+              <p>Sixth section, also added later but doesn't commence.</p>
+            </content>
+          </hcontainer>
+        </section>
+        <section eId="sec_7">
+          <num>7.</num>
+          <heading/>
+          <subsection eId="sec_7__subsec_1">
+            <num>(1)</num>
+            <content>
+              <p>first</p>
+            </content>
+          </subsection>
+          <subsection eId="sec_7__subsec_2">
+            <num>(2)</num>
+            <content>
+              <p>second</p>
+              <p>Seventh section, also added later and also commences in the future, with section 3.</p>
+            </content>
+          </subsection>
+        </section>
+      </chapter>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Schedule</heading>
+        <subheading>Laws Repealed</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#slaw">
+              <FRBRWork>
+                <FRBRthis value="/za/act/1980/01/!schedule"/>
+                <FRBRuri value="/za/act/1980/01"/>
+                <FRBRalias value="Schedule"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRcountry value="za"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="2021-11-18" name="Generation"/>
+                <FRBRauthor href="#slaw"/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <hcontainer eId="att_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>These laws are repealed:</p>
+              </content>
+            </hcontainer>
+            <paragraph eId="att_1__para_1">
+              <num>1.</num>
+              <content>
+                <p>This one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_2">
+              <num>2.</num>
+              <content>
+                <p>That one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_3">
+              <num>3.</num>
+              <content>
+                <p>This other one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_4">
+              <num>4.</num>
+              <content>
+                <p>And, this one</p>
+              </content>
+            </paragraph>
+          </mainBody>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`;
+      const xmlOut = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act contains="originalVersion" name="act">
+    <meta>
+      <identification source="#slaw">
+        <FRBRWork>
+          <FRBRthis value="/za/act/1980/01/main"/>
+          <FRBRuri value="/za/act/1980/01"/>
+          <FRBRalias value="Short Title" name="title"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRcountry value="za"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="2021-11-18" name="Generation"/>
+          <FRBRauthor href="#slaw"/>
+        </FRBRManifestation>
+      </identification>
+      <references source="#this">
+        <TLCOrganization eId="slaw" href="https://github.com/longhotsummer/slaw" showAs="Slaw"/>
+        <TLCOrganization eId="council" href="/ontology/organization/za/council" showAs="Council"/>
+      </references>
+    </meta>
+    <body>
+      <chapter eId="chp_1">
+        <num>1</num>
+        <part eId="chp_1__part_A">
+          <num>A</num>
+          <section eId="sec_1">
+            <num>1.</num>
+            <heading>First section 1</heading>
+            <hcontainer eId="sec_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Section 1 content.</p>
+              </content>
+            </hcontainer>
+            <crossHeading eId="sec_1__crossHeading_1">A cross head</crossHeading>
+            <subsection eId="sec_1__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>Regular old subsection.</p>
+                <blockList eId="sec_1__subsec_1__list_1">
+                  <listIntroduction>Subsection 1</listIntroduction>
+                  <item eId="sec_1__subsec_1__list_1__item_a">
+                    <num>(a)</num>
+                    <blockList eId="sec_1__subsec_1__list_1__item_a__list_1">
+                      <listIntroduction>paragraph 1</listIntroduction>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_i">
+                        <num>(i)</num>
+                        <p>subparagraph 1</p>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii">
+                        <num>(ii)</num>
+                        <blockList eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1">
+                          <listIntroduction>subparagraph 2</listIntroduction>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_A">
+                            <num>(A)</num>
+                            <p>item a</p>
+                          </item>
+                          <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_B">
+                            <num>(B)</num>
+                            <p>item b</p>
+                          </item>
+                        </blockList>
+                      </item>
+                      <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_iii">
+                        <num>(iii)</num>
+                        <p>subparagraph 3</p>
+                      </item>
+                    </blockList>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_aA">
+                    <num>(aA)</num>
+                    <p>inserted para aA</p>
+                  </item>
+                  <item eId="sec_1__subsec_1__list_1__item_b">
+                    <num>(b)</num>
+                    <p>paragraph 2</p>
+                  </item>
+                </blockList>
+              </content>
+            </subsection>
+            <subsection eId="sec_1__subsec_3A">
+              <num>(3A)</num>
+              <content>
+                <p>New subsection 3A (2 and 3 deleted), with a standalone image following:</p>
+                <p>
+                  <remark status="editorial">[section 2 has been repealed]</remark>
+                </p>
+              </content>
+            </subsection>
+          </section>
+          <section eId="sec_1_2">
+            <num>1.</num>
+            <heading>Second section 1</heading>
+            <hcontainer eId="sec_1_2__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Section 1 content.</p>
+              </content>
+            </hcontainer>
+            <crossHeading eId="sec_1_2__crossHeading_1">A cross head</crossHeading>
+            <subsection eId="sec_1_2__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>Regular old subsection.</p>
+                <blockList eId="sec_1_2__subsec_1__list_1">
+                  <listIntroduction>Subsection 1</listIntroduction>
+                  <item eId="sec_1_2__subsec_1__list_1__item_a">
+                    <num>(a)</num>
+                    <blockList eId="sec_1_2__subsec_1__list_1__item_a__list_1">
+                      <listIntroduction>paragraph 1</listIntroduction>
+                      <item eId="sec_1_2__subsec_1__list_1__item_a__list_1__item_i">
+                        <num>(i)</num>
+                        <p>subparagraph 1</p>
+                      </item>
+                      <item eId="sec_1_2__subsec_1__list_1__item_a__list_1__item_ii">
+                        <num>(ii)</num>
+                        <blockList eId="sec_1_2__subsec_1__list_1__item_a__list_1__item_ii__list_1">
+                          <listIntroduction>subparagraph 2</listIntroduction>
+                          <item eId="sec_1_2__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_A">
+                            <num>(A)</num>
+                            <p>item a</p>
+                          </item>
+                          <item eId="sec_1_2__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_B">
+                            <num>(B)</num>
+                            <p>item b</p>
+                          </item>
+                        </blockList>
+                      </item>
+                      <item eId="sec_1_2__subsec_1__list_1__item_a__list_1__item_iii">
+                        <num>(iii)</num>
+                        <p>subparagraph 3</p>
+                      </item>
+                    </blockList>
+                  </item>
+                  <item eId="sec_1_2__subsec_1__list_1__item_aA">
+                    <num>(aA)</num>
+                    <p>inserted para aA</p>
+                  </item>
+                  <item eId="sec_1_2__subsec_1__list_1__item_b">
+                    <num>(b)</num>
+                    <p>paragraph 2</p>
+                  </item>
+                </blockList>
+              </content>
+            </subsection>
+            <subsection eId="sec_1_2__subsec_3A">
+              <num>(3A)</num>
+              <content>
+                <p>New subsection 3A (2 and 3 deleted), with a standalone image following:</p>
+                <p>
+                  <remark status="editorial">[section 2 has been repealed]</remark>
+                </p>
+              </content>
+            </subsection>
+          </section>
+          <section eId="sec_3">
+            <num>3.</num>
+            <heading/>
+            <hcontainer eId="sec_3__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Has commenced</p>
+              </content>
+            </hcontainer>
+            <subsection eId="sec_3__subsec_1">
+              <num>(1)</num>
+              <content>
+                <p>hasn't.</p>
+              </content>
+            </subsection>
+            <subsection eId="sec_3__subsec_2">
+              <num>(2)</num>
+              <content>
+                <p>has.</p>
+              </content>
+            </subsection>
+            <subsection eId="sec_3__subsec_3">
+              <num>(3)</num>
+              <content>
+                <p>added</p>
+              </content>
+            </subsection>
+          </section>
+        </part>
+        <part eId="chp_1__part_B">
+          <num>B</num>
+          <section eId="sec_5">
+            <num>5.</num>
+            <heading/>
+            <hcontainer eId="sec_5__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Fifth section, added later, commences on insertion.</p>
+                <table eId="sec_5__hcontainer_1__table_1">
+                  <tr>
+                    <th style="width: 80.8402%;">
+                      <p>heading 1</p>
+                    </th>
+                    <th style="width: 18.9549%;">
+                      <p>heading 2</p>
+                    </th>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <p>cells 1 and 2</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 3</p>
+                    </td>
+                    <td rowspan="2" colspan="1" style="width:18.9549%">
+                      <p>merged the other way</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 5?</p>
+                    </td>
+                  </tr>
+                </table>
+              </content>
+            </hcontainer>
+          </section>
+        </part>
+      </chapter>
+      <chapter eId="chp_2">
+        <num>2</num>
+        <section eId="sec_6">
+          <num>6.</num>
+          <heading/>
+          <hcontainer eId="sec_6__hcontainer_1" name="hcontainer">
+            <content>
+              <p>Sixth section, also added later but doesn't commence.</p>
+            </content>
+          </hcontainer>
+        </section>
+        <section eId="sec_7">
+          <num>7.</num>
+          <heading/>
+          <subsection eId="sec_7__subsec_1">
+            <num>(1)</num>
+            <content>
+              <p>first</p>
+            </content>
+          </subsection>
+          <subsection eId="sec_7__subsec_2">
+            <num>(2)</num>
+            <content>
+              <p>second</p>
+              <p>Seventh section, also added later and also commences in the future, with section 3.</p>
+            </content>
+          </subsection>
+        </section>
+      </chapter>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Schedule</heading>
+        <subheading>Laws Repealed</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#slaw">
+              <FRBRWork>
+                <FRBRthis value="/za/act/1980/01/!schedule"/>
+                <FRBRuri value="/za/act/1980/01"/>
+                <FRBRalias value="Schedule"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRcountry value="za"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="2021-11-18" name="Generation"/>
+                <FRBRauthor href="#slaw"/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <hcontainer eId="att_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>These laws are repealed:</p>
+              </content>
+            </hcontainer>
+            <paragraph eId="att_1__para_1">
+              <num>1.</num>
+              <content>
+                <p>This one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_2">
+              <num>2.</num>
+              <content>
+                <p>That one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_3">
+              <num>3.</num>
+              <content>
+                <p>This other one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_4">
+              <num>4.</num>
+              <content>
+                <p>And, this one</p>
+              </content>
+            </paragraph>
+          </mainBody>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`;
+      const doc = new DOMParser().parseFromString(xmlIn, "text/xml");
+      new EidRewriterSlaw().rewriteAllEids(doc);
+      expect(new XMLSerializer().serializeToString(doc)).to.equal(xmlOut);
+    });
+    it('should correct unnumbered subpart eIds', () => {
+      const xmlIn = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act contains="originalVersion" name="act">
+    <meta>
+      <identification source="#slaw">
+        <FRBRWork>
+          <FRBRthis value="/za/act/1980/01/main"/>
+          <FRBRuri value="/za/act/1980/01"/>
+          <FRBRalias value="Short Title" name="title"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRcountry value="za"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="2021-11-18" name="Generation"/>
+          <FRBRauthor href="#slaw"/>
+        </FRBRManifestation>
+      </identification>
+      <references source="#this">
+        <TLCOrganization eId="slaw" href="https://github.com/longhotsummer/slaw" showAs="Slaw"/>
+        <TLCOrganization eId="council" href="/ontology/organization/za/council" showAs="Council"/>
+      </references>
+    </meta>
+    <body>
+      <chapter eId="chp_1">
+        <num>1</num>
+        <part eId="chp_1__part_A">
+          <num>A</num>
+          <subpart eId="chp_1__part_A__subpart_1">
+            <heading>Just a heading</heading>
+            <section eId="sec_1">
+              <num>1.</num>
+              <heading>Heading</heading>
+              <hcontainer eId="sec_1__hcontainer_1" name="hcontainer">
+                <content>
+                  <p>Section 1 content.</p>
+                </content>
+              </hcontainer>
+              <crossHeading eId="sec_1__crossHeading_1">A cross head</crossHeading>
+              <subsection eId="sec_1__subsec_1">
+                <num>(1)</num>
+                <content>
+                  <p>Regular old subsection.</p>
+                  <blockList eId="sec_1__subsec_1__list_1">
+                    <listIntroduction>Subsection 1</listIntroduction>
+                    <item eId="sec_1__subsec_1__list_1__item_a">
+                      <num>(a)</num>
+                      <blockList eId="sec_1__subsec_1__list_1__item_a__list_1">
+                        <listIntroduction>paragraph 1</listIntroduction>
+                        <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_i">
+                          <num>(i)</num>
+                          <p>subparagraph 1</p>
+                        </item>
+                        <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii">
+                          <num>(ii)</num>
+                          <blockList eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1">
+                            <listIntroduction>subparagraph 2</listIntroduction>
+                            <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_A">
+                              <num>(A)</num>
+                              <p>item a</p>
+                            </item>
+                            <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_B">
+                              <num>(B)</num>
+                              <p>item b</p>
+                            </item>
+                          </blockList>
+                        </item>
+                        <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_iii">
+                          <num>(iii)</num>
+                          <p>subparagraph 3</p>
+                        </item>
+                      </blockList>
+                    </item>
+                    <item eId="sec_1__subsec_1__list_1__item_aA">
+                      <num>(aA)</num>
+                      <p>inserted para aA</p>
+                    </item>
+                    <item eId="sec_1__subsec_1__list_1__item_b">
+                      <num>(b)</num>
+                      <p>paragraph 2</p>
+                    </item>
+                  </blockList>
+                </content>
+              </subsection>
+              <subsection eId="sec_1__subsec_3A">
+                <num>(3A)</num>
+                <content>
+                  <p>New subsection 3A (2 and 3 deleted), with a standalone image following:</p>
+                  <p>
+                    <remark status="editorial">[section 2 has been repealed]</remark>
+                  </p>
+                </content>
+              </subsection>
+            </section>
+            <section eId="sec_3">
+              <num>3.</num>
+              <heading/>
+              <hcontainer eId="sec_3__hcontainer_1" name="hcontainer">
+                <content>
+                  <p>Has commenced</p>
+                </content>
+              </hcontainer>
+              <subsection eId="sec_3__subsec_1">
+                <num>(1)</num>
+                <content>
+                  <p>hasn't.</p>
+                </content>
+              </subsection>
+              <subsection eId="sec_3__subsec_2">
+                <num>(2)</num>
+                <content>
+                  <p>has.</p>
+                </content>
+              </subsection>
+              <subsection eId="sec_3__subsec_3">
+                <num>(3)</num>
+                <content>
+                  <p>added</p>
+                </content>
+              </subsection>
+            </section>
+          </subpart>
+        </part>
+        <part eId="chp_1__part_B">
+          <num>B</num>
+          <section eId="sec_5">
+            <num>5.</num>
+            <heading/>
+            <hcontainer eId="sec_5__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Fifth section, added later, commences on insertion.</p>
+                <table eId="sec_5__hcontainer_1__table_1">
+                  <tr>
+                    <th style="width: 80.8402%;">
+                      <p>heading 1</p>
+                    </th>
+                    <th style="width: 18.9549%;">
+                      <p>heading 2</p>
+                    </th>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <p>cells 1 and 2</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 3</p>
+                    </td>
+                    <td rowspan="2" colspan="1" style="width:18.9549%">
+                      <p>merged the other way</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 5?</p>
+                    </td>
+                  </tr>
+                </table>
+              </content>
+            </hcontainer>
+          </section>
+        </part>
+      </chapter>
+      <chapter eId="chp_2">
+        <num>2</num>
+        <section eId="sec_6">
+          <num>6.</num>
+          <heading/>
+          <hcontainer eId="sec_6__hcontainer_1" name="hcontainer">
+            <content>
+              <p>Sixth section, also added later but doesn't commence.</p>
+            </content>
+          </hcontainer>
+        </section>
+        <section eId="sec_7">
+          <num>7.</num>
+          <heading/>
+          <subsection eId="sec_7__subsec_1">
+            <num>(1)</num>
+            <content>
+              <p>first</p>
+            </content>
+          </subsection>
+          <subsection eId="sec_7__subsec_2">
+            <num>(2)</num>
+            <content>
+              <p>second</p>
+              <p>Seventh section, also added later and also commences in the future, with section 3.</p>
+            </content>
+          </subsection>
+        </section>
+      </chapter>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Schedule</heading>
+        <subheading>Laws Repealed</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#slaw">
+              <FRBRWork>
+                <FRBRthis value="/za/act/1980/01/!schedule"/>
+                <FRBRuri value="/za/act/1980/01"/>
+                <FRBRalias value="Schedule"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRcountry value="za"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="2021-11-18" name="Generation"/>
+                <FRBRauthor href="#slaw"/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <hcontainer eId="att_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>These laws are repealed:</p>
+              </content>
+            </hcontainer>
+            <paragraph eId="att_1__para_1">
+              <num>1.</num>
+              <content>
+                <p>This one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_2">
+              <num>2.</num>
+              <content>
+                <p>That one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_3">
+              <num>3.</num>
+              <content>
+                <p>This other one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_4">
+              <num>4.</num>
+              <content>
+                <p>And, this one</p>
+              </content>
+            </paragraph>
+          </mainBody>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`;
+      const xmlOut = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act contains="originalVersion" name="act">
+    <meta>
+      <identification source="#slaw">
+        <FRBRWork>
+          <FRBRthis value="/za/act/1980/01/main"/>
+          <FRBRuri value="/za/act/1980/01"/>
+          <FRBRalias value="Short Title" name="title"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRcountry value="za"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="1980-01-01" name="Generation"/>
+          <FRBRauthor href="#council"/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/za/act/1980/01/eng@/main"/>
+          <FRBRuri value="/za/act/1980/01/eng@"/>
+          <FRBRdate date="2021-11-18" name="Generation"/>
+          <FRBRauthor href="#slaw"/>
+        </FRBRManifestation>
+      </identification>
+      <references source="#this">
+        <TLCOrganization eId="slaw" href="https://github.com/longhotsummer/slaw" showAs="Slaw"/>
+        <TLCOrganization eId="council" href="/ontology/organization/za/council" showAs="Council"/>
+      </references>
+    </meta>
+    <body>
+      <chapter eId="chp_1">
+        <num>1</num>
+        <part eId="chp_1__part_A">
+          <num>A</num>
+          <subpart eId="chp_1__part_A__subpart_nn_1">
+            <heading>Just a heading</heading>
+            <section eId="sec_1">
+              <num>1.</num>
+              <heading>Heading</heading>
+              <hcontainer eId="sec_1__hcontainer_1" name="hcontainer">
+                <content>
+                  <p>Section 1 content.</p>
+                </content>
+              </hcontainer>
+              <crossHeading eId="sec_1__crossHeading_1">A cross head</crossHeading>
+              <subsection eId="sec_1__subsec_1">
+                <num>(1)</num>
+                <content>
+                  <p>Regular old subsection.</p>
+                  <blockList eId="sec_1__subsec_1__list_1">
+                    <listIntroduction>Subsection 1</listIntroduction>
+                    <item eId="sec_1__subsec_1__list_1__item_a">
+                      <num>(a)</num>
+                      <blockList eId="sec_1__subsec_1__list_1__item_a__list_1">
+                        <listIntroduction>paragraph 1</listIntroduction>
+                        <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_i">
+                          <num>(i)</num>
+                          <p>subparagraph 1</p>
+                        </item>
+                        <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii">
+                          <num>(ii)</num>
+                          <blockList eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1">
+                            <listIntroduction>subparagraph 2</listIntroduction>
+                            <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_A">
+                              <num>(A)</num>
+                              <p>item a</p>
+                            </item>
+                            <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_ii__list_1__item_B">
+                              <num>(B)</num>
+                              <p>item b</p>
+                            </item>
+                          </blockList>
+                        </item>
+                        <item eId="sec_1__subsec_1__list_1__item_a__list_1__item_iii">
+                          <num>(iii)</num>
+                          <p>subparagraph 3</p>
+                        </item>
+                      </blockList>
+                    </item>
+                    <item eId="sec_1__subsec_1__list_1__item_aA">
+                      <num>(aA)</num>
+                      <p>inserted para aA</p>
+                    </item>
+                    <item eId="sec_1__subsec_1__list_1__item_b">
+                      <num>(b)</num>
+                      <p>paragraph 2</p>
+                    </item>
+                  </blockList>
+                </content>
+              </subsection>
+              <subsection eId="sec_1__subsec_3A">
+                <num>(3A)</num>
+                <content>
+                  <p>New subsection 3A (2 and 3 deleted), with a standalone image following:</p>
+                  <p>
+                    <remark status="editorial">[section 2 has been repealed]</remark>
+                  </p>
+                </content>
+              </subsection>
+            </section>
+            <section eId="sec_3">
+              <num>3.</num>
+              <heading/>
+              <hcontainer eId="sec_3__hcontainer_1" name="hcontainer">
+                <content>
+                  <p>Has commenced</p>
+                </content>
+              </hcontainer>
+              <subsection eId="sec_3__subsec_1">
+                <num>(1)</num>
+                <content>
+                  <p>hasn't.</p>
+                </content>
+              </subsection>
+              <subsection eId="sec_3__subsec_2">
+                <num>(2)</num>
+                <content>
+                  <p>has.</p>
+                </content>
+              </subsection>
+              <subsection eId="sec_3__subsec_3">
+                <num>(3)</num>
+                <content>
+                  <p>added</p>
+                </content>
+              </subsection>
+            </section>
+          </subpart>
+        </part>
+        <part eId="chp_1__part_B">
+          <num>B</num>
+          <section eId="sec_5">
+            <num>5.</num>
+            <heading/>
+            <hcontainer eId="sec_5__hcontainer_1" name="hcontainer">
+              <content>
+                <p>Fifth section, added later, commences on insertion.</p>
+                <table eId="sec_5__hcontainer_1__table_1">
+                  <tr>
+                    <th style="width: 80.8402%;">
+                      <p>heading 1</p>
+                    </th>
+                    <th style="width: 18.9549%;">
+                      <p>heading 2</p>
+                    </th>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <p>cells 1 and 2</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 3</p>
+                    </td>
+                    <td rowspan="2" colspan="1" style="width:18.9549%">
+                      <p>merged the other way</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:80.8402%">
+                      <p>cell 5?</p>
+                    </td>
+                  </tr>
+                </table>
+              </content>
+            </hcontainer>
+          </section>
+        </part>
+      </chapter>
+      <chapter eId="chp_2">
+        <num>2</num>
+        <section eId="sec_6">
+          <num>6.</num>
+          <heading/>
+          <hcontainer eId="sec_6__hcontainer_1" name="hcontainer">
+            <content>
+              <p>Sixth section, also added later but doesn't commence.</p>
+            </content>
+          </hcontainer>
+        </section>
+        <section eId="sec_7">
+          <num>7.</num>
+          <heading/>
+          <subsection eId="sec_7__subsec_1">
+            <num>(1)</num>
+            <content>
+              <p>first</p>
+            </content>
+          </subsection>
+          <subsection eId="sec_7__subsec_2">
+            <num>(2)</num>
+            <content>
+              <p>second</p>
+              <p>Seventh section, also added later and also commences in the future, with section 3.</p>
+            </content>
+          </subsection>
+        </section>
+      </chapter>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Schedule</heading>
+        <subheading>Laws Repealed</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#slaw">
+              <FRBRWork>
+                <FRBRthis value="/za/act/1980/01/!schedule"/>
+                <FRBRuri value="/za/act/1980/01"/>
+                <FRBRalias value="Schedule"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRcountry value="za"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="1980-01-01" name="Generation"/>
+                <FRBRauthor href="#council"/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/za/act/1980/01/eng@/!schedule"/>
+                <FRBRuri value="/za/act/1980/01/eng@"/>
+                <FRBRdate date="2021-11-18" name="Generation"/>
+                <FRBRauthor href="#slaw"/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <hcontainer eId="att_1__hcontainer_1" name="hcontainer">
+              <content>
+                <p>These laws are repealed:</p>
+              </content>
+            </hcontainer>
+            <paragraph eId="att_1__para_1">
+              <num>1.</num>
+              <content>
+                <p>This one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_2">
+              <num>2.</num>
+              <content>
+                <p>That one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_3">
+              <num>3.</num>
+              <content>
+                <p>This other one</p>
+              </content>
+            </paragraph>
+            <paragraph eId="att_1__para_4">
+              <num>4.</num>
+              <content>
+                <p>And, this one</p>
+              </content>
+            </paragraph>
+          </mainBody>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`;
+      const doc = new DOMParser().parseFromString(xmlIn, "text/xml");
+      new EidRewriterSlaw().rewriteAllEids(doc);
+      expect(new XMLSerializer().serializeToString(doc)).to.equal(xmlOut);
     });
   });
   describe('#cleanNum()', () => {
