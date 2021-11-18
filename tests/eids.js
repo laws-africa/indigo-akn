@@ -2369,7 +2369,7 @@ describe('eIdRewriterSlaw', () => {
   });
   describe('#cleanNum()', () => {
     it('should clean nums correctly', () => {
-      const r = new EidRewriterBluebell();
+      const r = new EidRewriterSlaw();
 
       expect(r.cleanNum("")).to.equal("");
       expect(r.cleanNum(" ")).to.equal("");
@@ -2393,7 +2393,7 @@ describe('eIdRewriterSlaw', () => {
     });
 
     it('should handle non-arabic numerals', () => {
-      const r = new EidRewriterBluebell();
+      const r = new EidRewriterSlaw();
       // hebrew aleph
       expect(r.cleanNum("(א)")).to.equal("א");
       // chinese 3
