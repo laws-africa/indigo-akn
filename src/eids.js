@@ -1,4 +1,4 @@
-export class EidRewriter {
+export class EidRewriterBluebell {
   constructor () {
     this.idUnnecessary = [
       'arguments', 'background', 'conclusions', 'decision', 'header', 'introduction', 'motivation', 'preamble', 'preface', 'remedies'

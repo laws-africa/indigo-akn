@@ -1,7 +1,7 @@
-import { EidRewriter } from '../src/eids.js';
+import { EidRewriterBluebell } from '../src/eids.js';
 import { expect } from 'chai';
 
-describe('eIdRewriter', () => {
+describe('eIdRewriterBluebell', () => {
   describe('#rewriteAllEids()', () => {
     it('should not change a document with correct eids', () => {
       const xml = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
@@ -65,7 +65,7 @@ describe('eIdRewriter', () => {
   </statement>
 </akomaNtoso>`;
       const doc = new DOMParser().parseFromString(xml, "text/xml");
-      new EidRewriter().rewriteAllEids(doc);
+      new EidRewriterBluebell().rewriteAllEids(doc);
       expect(new XMLSerializer().serializeToString(doc)).to.equal(xml);
     });
     it('should not change a document with correct eids', () => {
@@ -833,13 +833,13 @@ describe('eIdRewriter', () => {
   </statement>
 </akomaNtoso>`;
       const doc = new DOMParser().parseFromString(xml, "text/xml");
-      new EidRewriter().rewriteAllEids(doc);
+      new EidRewriterBluebell().rewriteAllEids(doc);
       expect(new XMLSerializer().serializeToString(doc)).to.equal(xml);
     });
   });
   describe('#cleanNum()', () => {
     it('should clean nums correctly', () => {
-      const r = new EidRewriter();
+      const r = new EidRewriterBluebell();
 
       expect(r.cleanNum("")).to.equal("");
       expect(r.cleanNum(" ")).to.equal("");
@@ -863,7 +863,7 @@ describe('eIdRewriter', () => {
     });
 
     it('should handle non-arabic numerals', () => {
-      const r = new EidRewriter();
+      const r = new EidRewriterBluebell();
       // hebrew aleph
       expect(r.cleanNum("(א)")).to.equal("א");
       // chinese 3
