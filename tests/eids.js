@@ -24,7 +24,7 @@ describe('eIdRewriter', () => {
         <paragraph eId="dvs_A__para_4">
           <num>4.</num>
           <content>
-            <p eId="dvs_A__para_4__p_1"><i>Reaffirming</i> <ref href="/akn/un/statement/decision/unep-cbd-cop/2010-10-18/10-20">decision X/20</ref>, <i>invites</i> the members of the Liaison Group of the Biodiversity-related Conventions:</p>
+            <p eId="dvs_A__para_4__p_1"><i>Reaffirming</i> <ref href="/akn/un/statement/decision/unep-cbd-cop/2010-10-18/10-20" eId="dvs_A__para_4__p_1__ref_1">decision X/20</ref>, <i>invites</i> the members of the Liaison Group of the Biodiversity-related Conventions:</p>
             <blockList eId="dvs_A__para_4__list_1">
               <item eId="dvs_A__para_4__list_1__item_a">
                 <num>(a)</num>
@@ -51,7 +51,7 @@ describe('eIdRewriter', () => {
         <paragraph eId="dvs_B__para_13">
           <num>13.</num>
           <content>
-            <p eId="dvs_B__para_13__p_1"><i>Reiterates</i> the importance of a United Nations system‑wide approach to the implementation of the Strategic Plan for Biodiversity 2011-2020 and the achievement of the Aichi Biodiversity Targets in the framework of the United Nations Decade for Biodiversity,<sup><authorialNote marker="3" placement="bottom" eId="dvs_B__para_13__p_1__authorialNote_1"><p eId="dvs_B__para_13__p_1__authorialNote_1__p_1">See General Assembly resolution 65/161.</p></authorialNote></sup> and <i>welcomes</i> the report of the Environment Management Group on relevant activities of the Issue Management Group on Biodiversity;<sup><authorialNote marker="4" placement="bottom" eId="dvs_B__para_13__p_1__authorialNote_2"><p eId="dvs_B__para_13__p_1__authorialNote_2__p_1">UNEP/CBD/COP/12/INF/48. See also: United Nations Environment Programme, Advancing the Biodiversity Agenda: A UN System-wide Contribution. A report by the Environment Management Group (EMG/1320/GEN) (UNEP, 2010). Available from <ref href="http://unemg.org">http://unemg.org</ref>;</p></authorialNote></sup></p>
+            <p eId="dvs_B__para_13__p_1"><i>Reiterates</i> the importance of a United Nations system‑wide approach to the implementation of the Strategic Plan for Biodiversity 2011-2020 and the achievement of the Aichi Biodiversity Targets in the framework of the United Nations Decade for Biodiversity,<sup><authorialNote marker="3" placement="bottom" eId="dvs_B__para_13__p_1__authorialNote_1"><p eId="dvs_B__para_13__p_1__authorialNote_1__p_1">See General Assembly resolution 65/161.</p></authorialNote></sup> and <i>welcomes</i> the report of the Environment Management Group on relevant activities of the Issue Management Group on Biodiversity;<sup><authorialNote marker="4" placement="bottom" eId="dvs_B__para_13__p_1__authorialNote_2"><p eId="dvs_B__para_13__p_1__authorialNote_2__p_1">UNEP/CBD/COP/12/INF/48. See also: United Nations Environment Programme, Advancing the Biodiversity Agenda: A UN System-wide Contribution. A report by the Environment Management Group (EMG/1320/GEN) (UNEP, 2010). Available from <ref href="http://unemg.org" eId="dvs_B__para_13__p_1__authorialNote_2__p_1__ref_1">http://unemg.org</ref>;</p></authorialNote></sup></p>
           </content>
         </paragraph>
         <paragraph eId="dvs_B__para_14">
