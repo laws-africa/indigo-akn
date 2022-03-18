@@ -57,17 +57,18 @@ export class EidRewriter {
     this.idExemptButPassToChildren = [
       'arguments', 'background', 'conclusions', 'decision', 'header', 'intro', 'introduction', 'motivation', 'preamble', 'preface', 'remedies', 'wrapUp',
     ];
-
-    this.counters = {};
-    this.eIdCounter = {};
-    this.eIdMappings = {};
   }
 
   /** Rewrites the eIds for all nodes in the tree.
    */
   rewriteAllEids (xmlDocument, prefix = '') {
+    this.counters = {};
+    this.eIdCounter = {};
     this.eIdMappings = {};
-    this.rewriteEid(xmlDocument, prefix);
+
+    for (let i = 0; i < xmlDocument.children.length; i++) {
+      this.rewriteEid(xmlDocument.children[i], prefix);
+    }
     return this.eIdMappings;
   }
 
