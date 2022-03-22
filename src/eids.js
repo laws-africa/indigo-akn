@@ -14,9 +14,8 @@ export class EidRewriter {
     this.idExempt = [
       'akomaNtoso', 'act', 'amendment', 'amendmentList', 'bill', 'debate', 'debateReport', 'doc', 'documentCollection', 'judgment', 'officialGazette', 'portion', 'statement',
       'amendmentBody', 'attachments', 'body', 'collectionBody', 'components', 'coverPage', 'debateBody', 'judgmentBody', 'mainBody', 'meta', 'portionBody',
-      'content', 'heading', 'num', 'subheading',
-      'td', 'th', 'tr',
-      'abbr', 'b', 'br', 'del', 'i', 'img', 'inline', 'ins', 'remark', 'span', 'sub', 'sup', 'u',
+      'br', 'tr', 'td', 'th', 'num', 'heading', 'subheading', 'content',
+      'abbr', 'b', 'i', 'u', 'sub', 'sup', 'ins', 'del', 'inline', 'img', 'remark', 'span',
     ];
     this.elementAliases = {
       'alinea': 'al',
