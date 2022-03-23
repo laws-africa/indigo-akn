@@ -194,7 +194,8 @@ export class EidRewriter {
   /** Updates the given element's eId as well as its children's.
    */
   rewriteEidPrefix (element, oldPrefix, newPrefix) {
-    let offset = (oldPrefix.length || 0) + 2;
+    let offset = (oldPrefix.length || 0) + 2,
+        localMappings = {};
 
     function rewrite(elem) {
       let oldEid = elem.getAttribute('eId') || '';
@@ -206,6 +207,12 @@ export class EidRewriter {
         elem.setAttribute('eId', `${newPrefix}__` + oldEid.slice(offset));
       }
 
+      // update localMappings if changed (ignores duplicates and elements with no eIds in original)
+      let newEid = elem.getAttribute('eId') || '';
+      if (oldEid && !localMappings[oldEid]) {
+        localMappings[oldEid] = newEid;
+      }
+
       // rewrite children recursively
       for (let i = 0; i < element.children.length; i++) {
         rewrite(element.children[i]);
@@ -213,5 +220,7 @@ export class EidRewriter {
     }
 
     rewrite(element);
+
+    return localMappings;
   }
 }
