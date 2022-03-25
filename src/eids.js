@@ -207,8 +207,8 @@ export class EidRewriter {
       }
 
       // rewrite children recursively
-      for (let i = 0; i < element.children.length; i++) {
-        rewrite(element.children[i]);
+      for (let i = 0; i < elem.children.length; i++) {
+        rewrite(elem.children[i]);
       }
     }
 
