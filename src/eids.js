@@ -197,13 +197,16 @@ export class EidRewriter {
     let offset = (oldPrefix.length || 0) + 2;
 
     function rewrite(elem) {
-      let oldEid = elem.getAttribute('eId') || '';
+      // only rewrite elements with eId attributes
+      if (elem.hasAttribute('eId')) {
+        let oldEid = elem.getAttribute('eId') || '';
 
-      if (oldEid === oldPrefix) {
-        elem.setAttribute('eId', newPrefix);
+        if (oldEid === oldPrefix) {
+          elem.setAttribute('eId', newPrefix);
 
-      } else if (oldEid.startsWith(`${oldPrefix}__`)) {
-        elem.setAttribute('eId', `${newPrefix}__` + oldEid.slice(offset));
+        } else if (oldEid.startsWith(`${oldPrefix}__`)) {
+          elem.setAttribute('eId', `${newPrefix}__` + oldEid.slice(offset));
+        }
       }
 
       // rewrite children recursively
@@ -212,6 +215,10 @@ export class EidRewriter {
       }
     }
 
+    // ensure that the top-level element has an existing eId to rewrite
+    if (!element.hasAttribute('eId')) {
+      element.setAttribute('eId', oldPrefix);
+    }
     rewrite(element);
   }
 }
