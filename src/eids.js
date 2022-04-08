@@ -63,12 +63,9 @@ export class EidRewriter {
 
   /** Rewrites the eIds for all nodes in the tree.
    */
-  rewriteAllEids (xmlDocument, prefix = '') {
+  rewriteAllEids (element, prefix = '') {
     this.eIdMappings = {};
-
-    for (let i = 0; i < xmlDocument.children.length; i++) {
-      this.rewriteEid(xmlDocument.children[i], prefix);
-    }
+    this.rewriteEid(element, prefix);
     return this.eIdMappings;
   }
 

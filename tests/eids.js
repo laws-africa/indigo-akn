@@ -65,7 +65,7 @@ describe('eIdRewriter', () => {
   </statement>
 </akomaNtoso>`;
       const doc = new DOMParser().parseFromString(xml, "text/xml");
-      new EidRewriter().rewriteAllEids(doc);
+      new EidRewriter().rewriteAllEids(doc.documentElement);
       expect(new XMLSerializer().serializeToString(doc)).to.equal(xml);
     });
 
@@ -834,7 +834,7 @@ describe('eIdRewriter', () => {
   </statement>
 </akomaNtoso>`;
       const doc = new DOMParser().parseFromString(xml, "text/xml");
-      new EidRewriter().rewriteAllEids(doc);
+      new EidRewriter().rewriteAllEids(doc.documentElement);
       expect(new XMLSerializer().serializeToString(doc)).to.equal(xml);
     });
 
@@ -900,7 +900,7 @@ describe('eIdRewriter', () => {
   </statement>
 </akomaNtoso>`;
       const doc = new DOMParser().parseFromString(xml, "text/xml");
-      new EidRewriter().rewriteAllEids(doc);
+      new EidRewriter().rewriteAllEids(doc.documentElement);
       expect(new XMLSerializer().serializeToString(doc)).to.equal(`<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
   <statement>
     <mainBody>
@@ -973,7 +973,7 @@ describe('eIdRewriter', () => {
   </statement>
 </akomaNtoso>`;
       const doc = new DOMParser().parseFromString(xml, "text/xml");
-      new EidRewriter().rewriteAllEids(doc);
+      new EidRewriter().rewriteAllEids(doc.documentElement);
       expect(new XMLSerializer().serializeToString(doc)).to.equal(`<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
   <statement name="statement">
     <preface>
