@@ -82,7 +82,7 @@ export class EidRewriter {
             ? element.firstElementChild.textContent : '';
         let newEid = this.getEid(prefix, tag, num) || '';
 
-        // update prefix on all descendants if changed
+        // update eId if changed
         if (oldEid !== newEid) {
           element.setAttribute('eId', newEid);
           // update mappings if changed (ignores duplicates and elements with no eIds in original)
