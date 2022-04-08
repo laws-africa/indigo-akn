@@ -56,13 +56,14 @@ export class EidRewriter {
     this.idExemptButPassToChildren = [
       'arguments', 'background', 'conclusions', 'decision', 'header', 'intro', 'introduction', 'motivation', 'preamble', 'preface', 'remedies', 'wrapUp',
     ];
+    this.counters = {};
+    this.eIdCounter = {};
+    this.eIdMappings = {};
   }
 
   /** Rewrites the eIds for all nodes in the tree.
    */
   rewriteAllEids (xmlDocument, prefix = '') {
-    this.counters = {};
-    this.eIdCounter = {};
     this.eIdMappings = {};
 
     for (let i = 0; i < xmlDocument.children.length; i++) {
@@ -86,8 +87,7 @@ export class EidRewriter {
 
         // update prefix on all descendants if changed
         if (oldEid !== newEid) {
-          this.rewriteEidPrefix(element, oldEid, newEid);
-
+          element.setAttribute('eId', newEid);
           // update mappings if changed (ignores duplicates and elements with no eIds in original)
           if (oldEid && !this.eIdMappings[oldEid]) {
             this.eIdMappings[oldEid] = newEid;
@@ -189,36 +189,5 @@ export class EidRewriter {
       return eId;
     }
     return this.ensureUnique(`${eId}_${count}`, false);
-  }
-
-  /** Updates the given element's eId as well as its children's.
-   */
-  rewriteEidPrefix (element, oldPrefix, newPrefix) {
-    let offset = (oldPrefix.length || 0) + 2;
-
-    function rewrite(elem) {
-      // only rewrite elements with eId attributes
-      if (elem.hasAttribute('eId')) {
-        let oldEid = elem.getAttribute('eId') || '';
-
-        if (oldEid === oldPrefix) {
-          elem.setAttribute('eId', newPrefix);
-
-        } else if (oldEid.startsWith(`${oldPrefix}__`)) {
-          elem.setAttribute('eId', `${newPrefix}__` + oldEid.slice(offset));
-        }
-      }
-
-      // rewrite children recursively
-      for (let i = 0; i < elem.children.length; i++) {
-        rewrite(elem.children[i]);
-      }
-    }
-
-    // ensure that the top-level element has an existing eId to rewrite
-    if (!element.hasAttribute('eId')) {
-      element.setAttribute('eId', oldPrefix);
-    }
-    rewrite(element);
   }
 }
