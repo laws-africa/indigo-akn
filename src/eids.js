@@ -58,52 +58,53 @@ export class EidRewriter {
     ];
     this.counters = {};
     this.eIdCounter = {};
-    this.eIdMappings = {};
+    this.mappings = {};
   }
 
   /** Rewrites the eIds for all nodes in the tree.
    */
   rewriteAllEids (element, prefix = '') {
-    this.eIdMappings = {};
+    this.reset();
     this.rewriteEid(element, prefix);
-    return this.eIdMappings;
+    return this.mappings;
   }
 
   rewriteEid (element, prefix = '') {
     // skip meta blocks
     let tag = element.tagName;
-    if (tag !== 'meta') {
+    if (tag === 'meta') {
+      return
+    }
 
-      // don't generate an eId for `act`, `num`, etc
-      if (!this.idExempt.includes(tag) && !this.idExemptButPassToChildren.includes(tag)) {
-        let oldEid = element.getAttribute('eId') || '';
+    // don't generate an eId for `act`, `num`, etc
+    if (!this.idExempt.includes(tag) && !this.idExemptButPassToChildren.includes(tag)) {
+      let oldEid = element.getAttribute('eId') || '';
 
-        let num = (element.firstElementChild && element.firstElementChild.tagName === 'num')
-            ? element.firstElementChild.textContent : '';
-        let newEid = this.getEid(prefix, tag, num) || '';
+      let num = (element.firstElementChild && element.firstElementChild.tagName === 'num')
+          ? element.firstElementChild.textContent : '';
+      let newEid = this.getEid(prefix, tag, num) || '';
 
-        // update eId if changed
-        if (oldEid !== newEid) {
-          element.setAttribute('eId', newEid);
-          // update mappings if changed (ignores duplicates and elements with no eIds in original)
-          if (oldEid && !this.eIdMappings[oldEid]) {
-            this.eIdMappings[oldEid] = newEid;
-          }
+      // update eId if changed
+      if (oldEid !== newEid) {
+        element.setAttribute('eId', newEid);
+        // update mappings if changed (ignores duplicates and elements with no eIds in original)
+        if (oldEid && !this.mappings[oldEid]) {
+          this.mappings[oldEid] = newEid;
         }
-
-        // use the new eId as the prefix if there is one, or keep using the same one
-        prefix = newEid || prefix
       }
 
-      // include the current tag in the prefix if needed
-      if (this.idExemptButPassToChildren.includes(tag)) {
-        prefix = prefix ? `${prefix}__${tag.toLowerCase()}` : tag.toLowerCase()
-      }
+      // use the new eId as the prefix if there is one, or keep using the same one
+      prefix = newEid || prefix
+    }
 
-      // keep drilling down
-      for (let i = 0; i < element.children.length; i++) {
-        this.rewriteEid(element.children[i], prefix)
-      }
+    // include the current tag in the prefix if needed
+    if (this.idExemptButPassToChildren.includes(tag)) {
+      prefix = prefix ? `${prefix}__${tag.toLowerCase()}` : tag.toLowerCase()
+    }
+
+    // keep drilling down
+    for (let i = 0; i < element.children.length; i++) {
+      this.rewriteEid(element.children[i], prefix)
     }
   }
 
@@ -140,6 +141,12 @@ export class EidRewriter {
     }
 
     return [num, nn];
+  }
+
+  reset () {
+    this.counters = {};
+    this.eIdCounter = {};
+    this.mappings = {};
   }
 
   /**
