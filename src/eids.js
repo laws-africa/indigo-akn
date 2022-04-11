@@ -56,57 +56,55 @@ export class EidRewriter {
     this.idExemptButPassToChildren = [
       'arguments', 'background', 'conclusions', 'decision', 'header', 'intro', 'introduction', 'motivation', 'preamble', 'preface', 'remedies', 'wrapUp',
     ];
+    this.counters = {};
+    this.eIdCounter = {};
+    this.mappings = {};
   }
 
   /** Rewrites the eIds for all nodes in the tree.
    */
-  rewriteAllEids (xmlDocument, prefix = '') {
-    this.counters = {};
-    this.eIdCounter = {};
-    this.eIdMappings = {};
-
-    for (let i = 0; i < xmlDocument.children.length; i++) {
-      this.rewriteEid(xmlDocument.children[i], prefix);
-    }
-    return this.eIdMappings;
+  rewriteAllEids (element, prefix = '') {
+    this.reset();
+    this.rewriteEid(element, prefix);
+    return this.mappings;
   }
 
   rewriteEid (element, prefix = '') {
     // skip meta blocks
     let tag = element.tagName;
-    if (tag !== 'meta') {
+    if (tag === 'meta') {
+      return
+    }
 
-      // don't generate an eId for `act`, `num`, etc
-      if (!this.idExempt.includes(tag) && !this.idExemptButPassToChildren.includes(tag)) {
-        let oldEid = element.getAttribute('eId') || '';
+    // don't generate an eId for `act`, `num`, etc
+    if (!this.idExempt.includes(tag) && !this.idExemptButPassToChildren.includes(tag)) {
+      let oldEid = element.getAttribute('eId') || '';
 
-        let num = (element.firstElementChild && element.firstElementChild.tagName === 'num')
-            ? element.firstElementChild.textContent : '';
-        let newEid = this.getEid(prefix, tag, num) || '';
+      let num = (element.firstElementChild && element.firstElementChild.tagName === 'num')
+          ? element.firstElementChild.textContent : '';
+      let newEid = this.getEid(prefix, tag, num) || '';
 
-        // update prefix on all descendants if changed
-        if (oldEid !== newEid) {
-          this.rewriteEidPrefix(element, oldEid, newEid);
-
-          // update mappings if changed (ignores duplicates and elements with no eIds in original)
-          if (oldEid && !this.eIdMappings[oldEid]) {
-            this.eIdMappings[oldEid] = newEid;
-          }
+      // update eId if changed
+      if (oldEid !== newEid) {
+        element.setAttribute('eId', newEid);
+        // update mappings if changed (ignores duplicates and elements with no eIds in original)
+        if (oldEid && !this.mappings[oldEid]) {
+          this.mappings[oldEid] = newEid;
         }
-
-        // use the new eId as the prefix if there is one, or keep using the same one
-        prefix = newEid || prefix
       }
 
-      // include the current tag in the prefix if needed
-      if (this.idExemptButPassToChildren.includes(tag)) {
-        prefix = prefix ? `${prefix}__${tag.toLowerCase()}` : tag.toLowerCase()
-      }
+      // use the new eId as the prefix if there is one, or keep using the same one
+      prefix = newEid || prefix
+    }
 
-      // keep drilling down
-      for (let i = 0; i < element.children.length; i++) {
-        this.rewriteEid(element.children[i], prefix)
-      }
+    // include the current tag in the prefix if needed
+    if (this.idExemptButPassToChildren.includes(tag)) {
+      prefix = prefix ? `${prefix}__${tag.toLowerCase()}` : tag.toLowerCase()
+    }
+
+    // keep drilling down
+    for (let i = 0; i < element.children.length; i++) {
+      this.rewriteEid(element.children[i], prefix)
     }
   }
 
@@ -143,6 +141,12 @@ export class EidRewriter {
     }
 
     return [num, nn];
+  }
+
+  reset () {
+    this.counters = {};
+    this.eIdCounter = {};
+    this.mappings = {};
   }
 
   /**
@@ -189,36 +193,5 @@ export class EidRewriter {
       return eId;
     }
     return this.ensureUnique(`${eId}_${count}`, false);
-  }
-
-  /** Updates the given element's eId as well as its children's.
-   */
-  rewriteEidPrefix (element, oldPrefix, newPrefix) {
-    let offset = (oldPrefix.length || 0) + 2;
-
-    function rewrite(elem) {
-      // only rewrite elements with eId attributes
-      if (elem.hasAttribute('eId')) {
-        let oldEid = elem.getAttribute('eId') || '';
-
-        if (oldEid === oldPrefix) {
-          elem.setAttribute('eId', newPrefix);
-
-        } else if (oldEid.startsWith(`${oldPrefix}__`)) {
-          elem.setAttribute('eId', `${newPrefix}__` + oldEid.slice(offset));
-        }
-      }
-
-      // rewrite children recursively
-      for (let i = 0; i < elem.children.length; i++) {
-        rewrite(elem.children[i]);
-      }
-    }
-
-    // ensure that the top-level element has an existing eId to rewrite
-    if (!element.hasAttribute('eId')) {
-      element.setAttribute('eId', oldPrefix);
-    }
-    rewrite(element);
   }
 }
