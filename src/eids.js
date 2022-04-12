@@ -194,4 +194,34 @@ export class EidRewriter {
     }
     return this.ensureUnique(`${eId}_${count}`, false);
   }
+
+  /**
+   * Recursively update eIds that start with the provided prefix.
+   *
+   * DEPRECATED. Instead, rewrite the entire tree with rewriteAllEids.
+   */
+  rewriteEidPrefix (element, oldPrefix, newPrefix) {
+    let offset = (oldPrefix.length || 0) + 2;
+
+    function rewrite(elem) {
+      // only rewrite elements with eId attributes
+      if (elem.hasAttribute('eId')) {
+        let oldEid = elem.getAttribute('eId') || '';
+
+        if (oldEid === oldPrefix) {
+          elem.setAttribute('eId', newPrefix);
+
+        } else if (oldEid.startsWith(`${oldPrefix}__`)) {
+          elem.setAttribute('eId', `${newPrefix}__` + oldEid.slice(offset));
+        }
+      }
+
+      // rewrite children recursively
+      for (let i = 0; i < elem.children.length; i++) {
+        rewrite(elem.children[i]);
+      }
+    }
+
+    rewrite(element);
+  }
 }
