@@ -4,26 +4,56 @@ import tippy, { Instance as Tippy } from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
 
+/**
+ * A basic enrichment.
+ */
 export interface IEnrichment {
   // TODO:
   target: object;
 }
 
-export interface IEnrichmentProvider {
+export interface IPopupEnrichmentProvider {
+  /**
+   * Called to load the enrichments provided by this provider.
+   */
   getEnrichments(): IEnrichment[];
+
+  /**
+   * Called when a mark is created for an enrichment.
+   * @param enrichment
+   * @param mark
+   */
   markCreated(enrichment: IEnrichment, mark: Element): void;
-  popupCreated(popup: Tippy): void;
+
+  /**
+   * Called when a popup is created for an enrichment.
+   * @param enrichment
+   * @param popup
+   */
+  popupCreated(enrichment: IEnrichment, popup: Tippy): void;
+
+  /**
+   * Called when a mark is being removed from the DOM.
+   * @param enrichment
+   * @param mark
+   */
   markDestroyed(enrichment: IEnrichment, mark: Element): void;
+
+  /**
+   * Called when the popup is about to be shown. Return the HTML Element to show as the body of the popup.
+   * @param enrichment
+   * @param mark
+   */
   getPopupContent(enrichment: IEnrichment, mark: Element): Element;
 }
 
 export class EnrichmentMarker {
-  public provider: IEnrichmentProvider;
+  public provider: IPopupEnrichmentProvider;
   public enrichment: IEnrichment;
   public marks: Element[];
   public popups: Tippy[];
 
-  constructor(provider: IEnrichmentProvider, enrichment: IEnrichment) {
+  constructor(provider: IPopupEnrichmentProvider, enrichment: IEnrichment) {
     this.provider = provider;
     this.enrichment = enrichment;
     this.marks = [];
@@ -36,7 +66,7 @@ export class EnrichmentMarker {
  * interacts with them.
  */
 export class PopupEnrichmentManager {
-  protected providers: IEnrichmentProvider[];
+  protected providers: IPopupEnrichmentProvider[];
   protected documentRoot: Element;
   protected markTag: string = 'mark';
   protected markClasses: string[] = ['enrichment', 'enrichment--popup'];
@@ -54,7 +84,7 @@ export class PopupEnrichmentManager {
    * Register an enrichment provider with the manager.
    * @param provider
    */
-  addProvider (provider: IEnrichmentProvider) {
+  addProvider (provider: IPopupEnrichmentProvider) {
     this.providers.push(provider);
   }
 
@@ -62,7 +92,7 @@ export class PopupEnrichmentManager {
    * Unregister a previously registered enrichment provider.
    * @param provider
    */
-  removeProvider (provider: IEnrichmentProvider) {
+  removeProvider (provider: IPopupEnrichmentProvider) {
     const ix = this.providers.indexOf(provider);
     if (ix > -1) {
       this.providers.splice(ix, 1);
@@ -78,6 +108,9 @@ export class PopupEnrichmentManager {
     this.createPopups();
   }
 
+  /**
+   * Creates the marks and markers for enrichments provided by the providers.
+   */
   createMarks () {
     for (const provider of this.providers) {
       const enrichments = provider.getEnrichments();
@@ -103,6 +136,9 @@ export class PopupEnrichmentManager {
     }
   }
 
+  /**
+   * Remove and destroy all marks and popups.
+   */
   removeMarks () {
     for (const mark of this.markers) {
       this.unmark(mark);
@@ -110,6 +146,10 @@ export class PopupEnrichmentManager {
     this.markers = [];
   }
 
+  /**
+   * Remove and destroy all marks and popups for this marker.
+   * @param marker
+   */
   unmark (marker: EnrichmentMarker) {
     for (const mark of marker.marks) {
       if (mark.parentElement) {
@@ -128,6 +168,9 @@ export class PopupEnrichmentManager {
     }
   }
 
+  /**
+   * Create the popups for all markers.
+   */
   createPopups () {
     for (const marker of this.markers) {
       for (const mark of marker.marks) {
@@ -142,7 +185,7 @@ export class PopupEnrichmentManager {
         });
 
         marker.popups.push(popup);
-        marker.provider.popupCreated(popup);
+        marker.provider.popupCreated(marker.enrichment, popup);
       }
     }
   }
