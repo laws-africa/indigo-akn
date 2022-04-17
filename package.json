@@ -17,7 +17,10 @@
   },
   "homepage": "https://github.com/laws-africa/indigo-akn#readme",
   "dependencies": {
-    "he": "^1.2.0"
+    "dom-anchor-text-position": "^5.0.0",
+    "dom-anchor-text-quote": "^4.0.2",
+    "he": "^1.2.0",
+    "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -29,6 +32,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-webpack": "^4.0.2",
     "mocha": "^8.2.0",
+    "typescript": "^4.6.3",
     "webpack": "^4.4.2",
     "webpack-cli": "^4.5.0"
   },
