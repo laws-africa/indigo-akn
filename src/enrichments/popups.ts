@@ -1,15 +1,13 @@
-// @ts-ignore
-import { targetToRange, markRange } from '../ranges';
+import { targetToRange, markRange, IRangeTarget } from '../ranges';
 import tippy, { Instance as Tippy } from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
 
 /**
- * A basic enrichment.
+ * A basic enrichment. (TODO: name this to be target-specific?)
  */
 export interface IEnrichment {
-  // TODO:
-  target: object;
+  target: IRangeTarget;
 }
 
 export interface IPopupEnrichmentProvider {
@@ -121,7 +119,7 @@ export class PopupEnrichmentManager {
       const range = targetToRange(enrichment.target, this.documentRoot);
 
       if (range) {
-        markRange(range, this.markTag, (mark: Element) => {
+        markRange(range, this.markTag, (mark: HTMLElement) => {
           // setup the mark
           marker.marks.push(mark);
           mark.classList.add(...this.markClasses);

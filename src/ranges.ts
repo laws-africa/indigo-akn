@@ -1,11 +1,29 @@
+// @ts-ignore
 import { toRange as textPositionToRange, fromRange as textPositionFromRange } from 'dom-anchor-text-position';
+// @ts-ignore
 import { toRange as textQuoteToRange, fromTextPosition as textQuoteFromTextPosition } from 'dom-anchor-text-quote';
 
 // Selector for elements that are foreign to AKN documents, such as table editor buttons and annotations
-const foreignElementsSelector = '.ig';
+export const foreignElementsSelector = '.ig';
 
-export const getTextNodes = (range) => {
-  const textNodes = [];
+export interface IRangeSelector {
+  type: string;
+  start?: number;
+  end?: number;
+  exact?: string;
+}
+
+export interface IRangeTarget {
+  anchor_id: string;
+  selectors?: IRangeSelector[];
+}
+
+/**
+ * Gather all the text nodes in the given range.
+ * @param range
+ */
+export function getTextNodes (range: Range): Text[] {
+  const textNodes: Text[] = [];
   const ignore = {
     TABLE: 1,
     THEAD: 1,
@@ -14,7 +32,7 @@ export const getTextNodes = (range) => {
   };
   let iterator, node, posn, start, end;
 
-  function split (node, offset) {
+  function split (node: Text, offset: number): Text {
     // split the text node so that the offsets fall on text node boundaries
     if (offset !== 0) {
       return node.splitText(offset);
@@ -23,67 +41,68 @@ export const getTextNodes = (range) => {
     }
   }
 
-  node = range.commonAncestorContainer;
-  if (node.nodeType !== Node.ELEMENT_NODE) node = node.parentElement;
+  node = (range.commonAncestorContainer as Element);
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    node = node.parentElement;
+  }
 
-  // remove foreign elements while working with the range
-  withoutForeignElements(node, function () {
-    if (range.startContainer.nodeType === Node.TEXT_NODE) {
-      // split the start and end text nodes so that the offsets fall on text node boundaries
-      start = split(range.startContainer, range.startOffset);
-    } else {
-      // first text node
-      start = document.createNodeIterator(range.startContainer, NodeFilter.SHOW_TEXT).nextNode();
-      if (!start) return;
-    }
+  if (node) {
+    // remove foreign elements while working with the range
+    withoutForeignElements(node, function () {
+      if (range.startContainer.nodeType === Node.TEXT_NODE) {
+        // split the start and end text nodes so that the offsets fall on text node boundaries
+        start = split((range.startContainer as Text), range.startOffset);
+      } else {
+        // first text node
+        start = document.createNodeIterator(range.startContainer, NodeFilter.SHOW_TEXT).nextNode();
+        if (!start) return;
+      }
 
-    if (range.endContainer.nodeType === Node.TEXT_NODE) {
-      end = split(range.endContainer, range.endOffset);
-    } else {
-      end = range.endContainer;
-    }
+      if (range.endContainer.nodeType === Node.TEXT_NODE) {
+        end = split((range.endContainer as Text), range.endOffset);
+      } else {
+        end = range.endContainer;
+      }
 
-    // gather all the text nodes between start and end
-    iterator = document.createNodeIterator(
-      range.commonAncestorContainer, NodeFilter.SHOW_TEXT,
-      function (n) {
-        // ignore text nodes in weird positions in tables
-        if (ignore[n.parentElement.tagName]) return NodeFilter.FILTER_SKIP;
-        return NodeFilter.FILTER_ACCEPT;
-      });
+      // gather all the text nodes between start and end
+      iterator = document.createNodeIterator(
+        range.commonAncestorContainer, NodeFilter.SHOW_TEXT,
+        function (n) {
+          // ignore text nodes in weird positions in tables
+          // @ts-ignore
+          if (ignore[n.parentElement.tagName]) return NodeFilter.FILTER_SKIP;
+          return NodeFilter.FILTER_ACCEPT;
+        });
 
-    // advance until we're at the start node
-    node = iterator.nextNode();
-    while (node && node !== start) node = iterator.nextNode();
+      // advance until we're at the start node
+      let textNode = (iterator.nextNode() as Text);
+      while (textNode && textNode !== start) textNode = (iterator.nextNode() as Text);
 
-    // gather text nodes
-    while (node) {
-      posn = node.compareDocumentPosition(end);
-      // stop if node isn't inside end, and doesn't come before end
-      if ((posn & Node.DOCUMENT_POSITION_CONTAINS) === 0 &&
-        (posn & Node.DOCUMENT_POSITION_FOLLOWING) === 0) break;
+      // gather text nodes
+      while (textNode) {
+        posn = textNode.compareDocumentPosition(end);
+        // stop if node isn't inside end, and doesn't come before end
+        if ((posn & Node.DOCUMENT_POSITION_CONTAINS) === 0 &&
+          (posn & Node.DOCUMENT_POSITION_FOLLOWING) === 0) break;
 
-      textNodes.push(node);
-      node = iterator.nextNode();
-    }
-  });
+        textNodes.push(textNode);
+        textNode = (iterator.nextNode() as Text);
+      }
+    });
+  }
 
   return textNodes;
-};
+}
 
 /**
  * Mark all the text nodes in a range with a given tag (eg. 'mark'),
  * calling the callback for each new marked element.
  */
-export function markRange (range, tagName, callback, creator) {
-  const tag = tagName || 'mark';
-
-  const textNodes = getTextNodes(range);
-
+export function markRange (range: Range, tag='mark', callback: (e: HTMLElement, t: Text) => HTMLElement) {
   // mark the gathered nodes
-  textNodes.forEach(function (textNode) {
-    let mark = creator ? creator(textNode, tag) : textNode.ownerDocument.createElement(tag);
-    if (mark) {
+  for (const textNode of getTextNodes(range)) {
+    if (textNode.parentElement) {
+      let mark = textNode.ownerDocument.createElement(tag);
       if (callback) {
         // let the callback modify the mark
         mark = callback(mark, textNode);
@@ -93,7 +112,7 @@ export function markRange (range, tagName, callback, creator) {
         mark.appendChild(textNode);
       }
     }
-  });
+  }
 }
 
 /**
@@ -106,21 +125,23 @@ export function markRange (range, tagName, callback, creator) {
  *
  * @returns the result of callback()
  */
-export function withoutForeignElements (root, callback, selector) {
-  const removed = [];
-
-  selector = selector || foreignElementsSelector;
+export function withoutForeignElements (root: Element, callback: () => any, selector=foreignElementsSelector) {
+  const removed: any[] = [];
 
   // remove the foreign elements
   root.querySelectorAll(selector).forEach(function (elem) {
     const info = { e: elem };
 
     // store where the element was in the tree
+    // @ts-ignore
     if (elem.nextSibling) info.before = elem.nextSibling;
     // no next sibling, it's the last child
+    // @ts-ignore
     else info.parent = elem.parentElement;
 
-    elem.parentElement.removeChild(elem);
+    if (elem.parentElement) {
+      elem.parentElement.removeChild(elem);
+    }
     removed.push(info);
   });
 
@@ -131,8 +152,11 @@ export function withoutForeignElements (root, callback, selector) {
     // put the elements back, even if result throws an error
     removed.reverse();
     removed.forEach(function (info) {
-      if (info.before) info.before.parentElement.insertBefore(info.e, info.before);
-      else info.parent.appendChild(info.e);
+      if (info.before) {
+        info.before.parentElement.insertBefore(info.e, info.before);
+      } else {
+        info.parent.appendChild(info.e);
+      }
     });
   }
 
@@ -144,7 +168,7 @@ export function withoutForeignElements (root, callback, selector) {
  *
  * This does its best to try to find a match, walking up the anchor hierarchy if possible.
  */
-export function targetToRange (target, root) {
+export function targetToRange (target: IRangeTarget, root: Element) {
   let anchorId = target.anchor_id;
   let ix = anchorId.lastIndexOf('__');
   let anchor = root.querySelector(`[id="${anchorId}"]`);
@@ -157,12 +181,13 @@ export function targetToRange (target, root) {
     anchor = root.querySelector(`[id="${anchorId}"]`);
   }
 
-  if (!anchor) return;
-
-  // remove foreign elements, then use the selectors to find the text and build up a Range object.
-  return withoutForeignElements(anchor, () => {
-    return selectorsToRange(anchor, target.selectors);
-  });
+  if (anchor) {
+    // remove foreign elements, then use the selectors to find the text and build up a Range object.
+    return withoutForeignElements(anchor, () => {
+      // @ts-ignore
+      return selectorsToRange(anchor, target.selectors);
+    });
+  }
 }
 
 /**
@@ -171,7 +196,7 @@ export function targetToRange (target, root) {
  * Only TextPositionSelector and TextQuoteSelector types from https://www.w3.org/TR/annotation-model/
  * are used.
  */
-export function selectorsToRange (anchor, selectors) {
+export function selectorsToRange (anchor: Element, selectors: IRangeSelector[]) {
   let range;
   const posnSelector = selectors.find(s => s.type === 'TextPositionSelector');
   const quoteSelector = selectors.find(s => s.type === 'TextQuoteSelector');
@@ -198,27 +223,39 @@ export function selectorsToRange (anchor, selectors) {
  * Given a browser Range object, transform it into a target description
  * suitable for use with annotations. Will not go above root, if given.
  */
-export function rangeToTarget (range, root) {
-  let anchor = range.commonAncestorContainer;
-  const target = { selectors: [] };
+export function rangeToTarget (range: Range, root: Element): IRangeTarget | null {
+  let anchor: Element | null = (range.commonAncestorContainer as Element);
 
   // find the closest element to this anchor that has an id attribute
-  if (anchor.nodeType !== Node.ELEMENT_NODE) anchor = anchor.parentElement;
-  anchor = anchor.closest('[id]');
+  if (anchor.nodeType !== Node.ELEMENT_NODE) {
+    anchor = anchor.parentElement;
+    if (!anchor) {
+      return null;
+    }
+  }
 
-  if (root && anchor !== root &&
-    (anchor.compareDocumentPosition(root) & Node.DOCUMENT_POSITION_CONTAINS) === 0) return;
-  target.anchor_id = anchor.id;
+  anchor = anchor.closest('[id]');
+  // bail if there's no anchor, or the anchor is outside of the root
+  if (!anchor || (anchor !== root && (anchor.compareDocumentPosition(root) & Node.DOCUMENT_POSITION_CONTAINS) === 0)) {
+    return null;
+  }
+
+  const target: IRangeTarget = {
+    anchor_id: anchor.id,
+    selectors: []
+  };
 
   withoutForeignElements(anchor, () => {
     // position selector
     let selector = textPositionFromRange(anchor, range);
     selector.type = 'TextPositionSelector';
+    // @ts-ignore
     target.selectors.push(selector);
 
     // quote selector, based on the position
     selector = textQuoteFromTextPosition(anchor, selector);
     selector.type = 'TextQuoteSelector';
+    // @ts-ignore
     target.selectors.push(selector);
   });
 
