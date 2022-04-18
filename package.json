@@ -1,9 +1,11 @@
 {
   "name": "@laws-africa/indigo-akn",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "Akoma Ntoso support libraries for the Indigo platform.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "build": "rm -rf dist && tsc && copyfiles --up 1 'src/**/*.js' dist",
     "test": "karma start karma.conf.js"
   },
   "repository": {
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "copyfiles": "^2.4.1",
     "karma": "^6.3.16",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
