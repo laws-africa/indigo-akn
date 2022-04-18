@@ -1,5 +1,5 @@
 // @ts-ignore
-import { targetToRange, markRange } from '../dom';
+import { targetToRange, markRange } from '../ranges';
 import tippy, { Instance as Tippy } from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
@@ -33,13 +33,6 @@ export interface IPopupEnrichmentProvider {
   popupCreated(enrichment: IEnrichment, popup: Tippy): void;
 
   /**
-   * Called when a mark is being removed from the DOM.
-   * @param enrichment
-   * @param mark
-   */
-  markDestroyed(enrichment: IEnrichment, mark: Element): void;
-
-  /**
    * Called when the popup is about to be shown. Return the HTML Element to show as the body of the popup.
    * @param enrichment
    * @param mark
@@ -63,7 +56,8 @@ export class EnrichmentMarker {
 
 /**
  * This manager provides functionality to handle range-based enrichments that provide a popup when the user
- * interacts with them.
+ * interacts with them. The manager watches its document root for top-level modifications and re-applies enrichments
+ * when necessary.
  */
 export class PopupEnrichmentManager {
   protected providers: IPopupEnrichmentProvider[];
@@ -71,13 +65,20 @@ export class PopupEnrichmentManager {
   protected markTag: string = 'mark';
   protected markClasses: string[] = ['enrichment', 'enrichment--popup'];
   protected markers: EnrichmentMarker[];
-  protected tippies: Tippy[];
+  protected observer: MutationObserver;
 
   constructor (documentRoot: Element) {
     this.documentRoot = documentRoot;
     this.providers = [];
     this.markers = [];
-    this.tippies = [];
+    this.observer = this.createObserver();
+  }
+
+  createObserver (): MutationObserver {
+    // watch the document root for changes and re-apply enrichments
+    const observer = new MutationObserver(() => this.applyEnrichments());
+    observer.observe(this.documentRoot, { childList: true });
+    return observer;
   }
 
   /**
@@ -95,62 +96,67 @@ export class PopupEnrichmentManager {
   removeProvider (provider: IPopupEnrichmentProvider) {
     const ix = this.providers.indexOf(provider);
     if (ix > -1) {
+      this.unapplyProviderEnrichments(provider);
       this.providers.splice(ix, 1);
     }
   }
 
   /**
-   * Re-render the enrichments.
+   * Re-apply all enrichments from all providers.
    */
-  render () {
-    this.removeMarks();
-    this.createMarks();
-    this.createPopups();
+  applyEnrichments () {
+    for (const provider of this.providers) {
+      this.applyProviderEnrichments(provider);
+    }
   }
 
   /**
-   * Creates the marks and markers for enrichments provided by the providers.
+   * Creates the marks and markers for enrichments provided by this provider, after removing any existing enrichments.
    */
-  createMarks () {
-    for (const provider of this.providers) {
-      const enrichments = provider.getEnrichments();
+  applyProviderEnrichments (provider: IPopupEnrichmentProvider) {
+    this.unapplyProviderEnrichments(provider);
 
-      for (const enrichment of enrichments) {
-        const marker = new EnrichmentMarker(provider, enrichment);
-        const range = targetToRange(enrichment.target, this.documentRoot);
+    for (const enrichment of provider.getEnrichments()) {
+      const marker = new EnrichmentMarker(provider, enrichment);
+      const range = targetToRange(enrichment.target, this.documentRoot);
 
-        if (range) {
-          markRange(range, this.markTag, (mark: Element) => {
-            marker.marks.push(mark);
-            mark.classList.add(...this.markClasses);
-            provider.markCreated(enrichment, mark);
-            return mark;
-          });
-        }
+      if (range) {
+        markRange(range, this.markTag, (mark: Element) => {
+          // setup the mark
+          marker.marks.push(mark);
+          mark.classList.add(...this.markClasses);
+          provider.markCreated(enrichment, mark);
 
-        // only add this marker marks were created
-        if (marker.marks.length) {
-          this.markers.push(marker);
-        }
+          // setup the popup
+          marker.popups.push(this.createPopup(provider, enrichment, mark));
+
+          return mark;
+        });
+      }
+
+      // only store this marker if marks were created
+      if (marker.marks.length) {
+        this.markers.push(marker);
       }
     }
   }
 
   /**
-   * Remove and destroy all marks and popups.
+   * Remove the enrichments applied for a provider.
+   * @param provider
    */
-  removeMarks () {
-    for (const mark of this.markers) {
-      this.unmark(mark);
+  unapplyProviderEnrichments (provider: IPopupEnrichmentProvider) {
+    const markers = this.markers.filter(m => m.provider === provider);
+    for (const marker of markers) {
+      this.unapplyMarker(marker);
     }
-    this.markers = [];
   }
 
   /**
    * Remove and destroy all marks and popups for this marker.
    * @param marker
    */
-  unmark (marker: EnrichmentMarker) {
+  unapplyMarker (marker: EnrichmentMarker) {
     for (const mark of marker.marks) {
       if (mark.parentElement) {
         while (mark.firstChild) {
@@ -158,8 +164,6 @@ export class PopupEnrichmentManager {
         }
         mark.parentElement.removeChild(mark);
       }
-
-      marker.provider.markDestroyed(marker.enrichment, mark);
     }
 
     // clean up tippies
@@ -169,24 +173,22 @@ export class PopupEnrichmentManager {
   }
 
   /**
-   * Create the popups for all markers.
+   * Create a popup for this provider, enrichment and mark.
+   * @param provider
+   * @param enrichment
+   * @param mark
    */
-  createPopups () {
-    for (const marker of this.markers) {
-      for (const mark of marker.marks) {
-        const popup = tippy(mark, {
-          appendTo: document.body,
-          interactive: true,
-          theme: 'light',
-          zIndex: 0,
-          onShow: (instance) => {
-            instance.setContent(marker.provider.getPopupContent(marker.enrichment, mark));
-          }
-        });
-
-        marker.popups.push(popup);
-        marker.provider.popupCreated(marker.enrichment, popup);
+  createPopup (provider: IPopupEnrichmentProvider, enrichment: IEnrichment, mark: Element) {
+    const popup = tippy(mark, {
+      appendTo: document.body,
+      interactive: true,
+      theme: 'light',
+      zIndex: 0,
+      onShow: (instance) => {
+        instance.setContent(provider.getPopupContent(enrichment, mark));
       }
-    }
+    });
+    provider.popupCreated(enrichment, popup);
+    return popup;
   }
 }
