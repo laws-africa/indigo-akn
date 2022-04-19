@@ -192,7 +192,7 @@ export function targetToRange (target: IRangeTarget, root: Element): Range | nul
       });
     } else {
       // no selectors, the anchor is the range
-      const range = new Range();
+      const range = root.ownerDocument.createRange();
       range.setStartBefore(anchor);
       range.setEndAfter(anchor);
       return range;
