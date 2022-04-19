@@ -41,54 +41,45 @@ export function getTextNodes (range: Range): Text[] {
     }
   }
 
-  node = (range.commonAncestorContainer as Element);
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    node = node.parentElement;
+  // remove foreign elements while working with the range
+  if (range.startContainer.nodeType === Node.TEXT_NODE) {
+    // split the start and end text nodes so that the offsets fall on text node boundaries
+    start = split((range.startContainer as Text), range.startOffset);
+  } else {
+    // first text node
+    start = document.createNodeIterator(range.startContainer, NodeFilter.SHOW_TEXT).nextNode();
+    if (!start) return textNodes;
   }
 
-  if (node) {
-    // remove foreign elements while working with the range
-    withoutForeignElements(node, function () {
-      if (range.startContainer.nodeType === Node.TEXT_NODE) {
-        // split the start and end text nodes so that the offsets fall on text node boundaries
-        start = split((range.startContainer as Text), range.startOffset);
-      } else {
-        // first text node
-        start = document.createNodeIterator(range.startContainer, NodeFilter.SHOW_TEXT).nextNode();
-        if (!start) return;
-      }
+  if (range.endContainer.nodeType === Node.TEXT_NODE) {
+    end = split((range.endContainer as Text), range.endOffset);
+  } else {
+    end = range.endContainer;
+  }
 
-      if (range.endContainer.nodeType === Node.TEXT_NODE) {
-        end = split((range.endContainer as Text), range.endOffset);
-      } else {
-        end = range.endContainer;
-      }
-
-      // gather all the text nodes between start and end
-      iterator = document.createNodeIterator(
-        range.commonAncestorContainer, NodeFilter.SHOW_TEXT,
-        function (n) {
-          // ignore text nodes in weird positions in tables
-          // @ts-ignore
-          if (ignore[n.parentElement.tagName]) return NodeFilter.FILTER_SKIP;
-          return NodeFilter.FILTER_ACCEPT;
-        });
-
-      // advance until we're at the start node
-      let textNode = (iterator.nextNode() as Text);
-      while (textNode && textNode !== start) textNode = (iterator.nextNode() as Text);
-
-      // gather text nodes
-      while (textNode) {
-        posn = textNode.compareDocumentPosition(end);
-        // stop if node isn't inside end, and doesn't come before end
-        if ((posn & Node.DOCUMENT_POSITION_CONTAINS) === 0 &&
-          (posn & Node.DOCUMENT_POSITION_FOLLOWING) === 0) break;
-
-        textNodes.push(textNode);
-        textNode = (iterator.nextNode() as Text);
-      }
+  // gather all the text nodes between start and end
+  iterator = document.createNodeIterator(
+    range.commonAncestorContainer, NodeFilter.SHOW_TEXT,
+    function (n) {
+      // ignore text nodes in weird positions in tables
+      // @ts-ignore
+      if (ignore[n.parentElement.tagName]) return NodeFilter.FILTER_SKIP;
+      return NodeFilter.FILTER_ACCEPT;
     });
+
+  // advance until we're at the start node
+  let textNode = (iterator.nextNode() as Text);
+  while (textNode && textNode !== start) textNode = (iterator.nextNode() as Text);
+
+  // gather text nodes
+  while (textNode) {
+    posn = textNode.compareDocumentPosition(end);
+    // stop if node isn't inside end, and doesn't come before end
+    if ((posn & Node.DOCUMENT_POSITION_CONTAINS) === 0 &&
+      (posn & Node.DOCUMENT_POSITION_FOLLOWING) === 0) break;
+
+    textNodes.push(textNode);
+    textNode = (iterator.nextNode() as Text);
   }
 
   return textNodes;
@@ -99,19 +90,28 @@ export function getTextNodes (range: Range): Text[] {
  * calling the callback for each new marked element.
  */
 export function markRange (range: Range, tag='mark', callback: (e: HTMLElement, t: Text) => HTMLElement) {
-  // mark the gathered nodes
-  for (const textNode of getTextNodes(range)) {
-    if (textNode.parentElement) {
-      let mark = textNode.ownerDocument.createElement(tag);
-      if (callback) {
-        // let the callback modify the mark
-        mark = callback(mark, textNode);
+  let node: Element|null = (range.commonAncestorContainer as Element);
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    node = node.parentElement;
+  }
+
+  if (node) {
+    withoutForeignElements(node, () => {
+      // mark the gathered nodes
+      for (const textNode of getTextNodes(range)) {
+        if (textNode.parentElement) {
+          let mark = textNode.ownerDocument.createElement(tag);
+          if (callback) {
+            // let the callback modify the mark
+            mark = callback(mark, textNode);
+          }
+          if (mark) {
+            textNode.parentElement.insertBefore(mark, textNode);
+            mark.appendChild(textNode);
+          }
+        }
       }
-      if (mark) {
-        textNode.parentElement.insertBefore(mark, textNode);
-        mark.appendChild(textNode);
-      }
-    }
+    });
   }
 }
 
@@ -164,17 +164,19 @@ export function withoutForeignElements (root: Element, callback: () => any, sele
 }
 
 /**
- * Convert a Target object (anchor_id, selectors) to Range object.
+ * Convert a Target object (anchor_id, selectors) to an Range object in an HTML document.
  *
  * This does its best to try to find a match, walking up the anchor hierarchy if possible.
+ *
+ * @param target the range target
+ * @param root root element to look within
  */
-export function targetToRange (target: IRangeTarget, root: Element) {
+export function targetToRange (target: IRangeTarget, root: Element): Range | null {
   let anchorId = target.anchor_id;
   let ix = anchorId.lastIndexOf('__');
   let anchor = root.querySelector(`[id="${anchorId}"]`);
 
-  // do our best to find the anchor node, going upwards up the id chain if
-  // the id has dotted components
+  // do our best to find the anchor node, going upwards up the id chain if the id has components
   while (!anchor && ix > -1) {
     anchorId = anchorId.substring(0, ix);
     ix = anchorId.lastIndexOf('__');
@@ -182,12 +184,66 @@ export function targetToRange (target: IRangeTarget, root: Element) {
   }
 
   if (anchor) {
-    // remove foreign elements, then use the selectors to find the text and build up a Range object.
-    return withoutForeignElements(anchor, () => {
-      // @ts-ignore
-      return selectorsToRange(anchor, target.selectors);
-    });
+    if (target.selectors) {
+      // remove foreign elements, then use the selectors to find the text and build up a Range object.
+      return withoutForeignElements(anchor, () => {
+        // @ts-ignore
+        return selectorsToRange(anchor, target.selectors);
+      });
+    } else {
+      // no selectors, the anchor is the range
+      const range = new Range();
+      range.setStartBefore(anchor);
+      range.setEndAfter(anchor);
+      return range;
+    }
   }
+
+  return null;
+}
+
+/**
+ * Convert a Target object (anchor_id, selectors) to an Range object in an AKN XML document.
+ *
+ * This does its best to try to find a match, walking up the anchor hierarchy if possible.
+ *
+ * @param target the range target
+ * @param root root element to look within
+ */
+export function targetToAknRange (target: IRangeTarget, root: Element): Range | null {
+  function find (id: string): Element | null {
+    // special case of top-level anchor
+    // TODO: add others
+    if (id === 'arguments') {
+      return root.querySelector(id);
+    } else {
+      return root.querySelector(`[eId=${id}]`);
+    }
+  }
+  let anchorId = target.anchor_id;
+  let ix = anchorId.lastIndexOf('__');
+  let anchor = find(anchorId);
+
+  // do our best to find the anchor node, going upwards up the id chain if the id has components
+  while (!anchor && ix > -1) {
+    anchorId = anchorId.substring(0, ix);
+    ix = anchorId.lastIndexOf('__');
+    anchor = find(anchorId);
+  }
+
+  if (anchor) {
+    if (target.selectors) {
+      return selectorsToRange(anchor, target.selectors);
+    } else {
+      // no selectors, the anchor is the range
+      const range = new Range();
+      range.setStartBefore(anchor);
+      range.setEndAfter(anchor);
+      return range;
+    }
+  }
+
+  return null;
 }
 
 /**
