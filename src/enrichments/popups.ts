@@ -182,7 +182,11 @@ export class PopupEnrichmentManager {
       interactive: true,
       theme: 'light',
       zIndex: 0,
+      delay: [0, 0],
       onShow: (instance) => {
+        // some providers re-use the same element as the content between popups, so we must clear the content
+        // first otherwise the popup doesn't re-render itself
+        instance.setContent('');
         instance.setContent(provider.getPopupContent(enrichment, mark));
       }
     });
