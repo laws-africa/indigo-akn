@@ -125,42 +125,46 @@ export function markRange (range: Range, tag='mark', callback: (e: HTMLElement, 
  *
  * @returns the result of callback()
  */
-export function withoutForeignElements (root: Element, callback: () => any, selector=foreignElementsSelector) {
-  const removed: any[] = [];
+export function withoutForeignElements (root: Element, callback: () => any, selector=foreignElementsSelector): any {
+  type RemovedElement = {
+    e: Element,
+    before: Node | null,
+    parent: HTMLElement | null,
+  };
+  const removed: RemovedElement[] = [];
 
   // remove the foreign elements
-  root.querySelectorAll(selector).forEach(function (elem) {
-    const info = { e: elem };
+  for (const elem of root.querySelectorAll(selector)) {
+    const info: RemovedElement = {
+      e: elem,
+      before: null,
+      parent: null
+    };
 
     // store where the element was in the tree
-    // @ts-ignore
     if (elem.nextSibling) info.before = elem.nextSibling;
     // no next sibling, it's the last child
-    // @ts-ignore
     else info.parent = elem.parentElement;
 
     if (elem.parentElement) {
       elem.parentElement.removeChild(elem);
     }
     removed.push(info);
-  });
+  }
 
-  let result;
   try {
-    result = callback();
+    return callback();
   } finally {
     // put the elements back, even if result throws an error
     removed.reverse();
-    removed.forEach(function (info) {
-      if (info.before) {
+    for (const info of removed) {
+      if (info.before && info.before.parentElement) {
         info.before.parentElement.insertBefore(info.e, info.before);
-      } else {
+      } else if (info.parent) {
         info.parent.appendChild(info.e);
       }
-    });
+    }
   }
-
-  return result;
 }
 
 /**
