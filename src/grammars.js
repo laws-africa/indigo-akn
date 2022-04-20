@@ -207,8 +207,26 @@ export class GrammarModel {
 
     editor.trigger(this.language_id, 'undo');
     editor.pushUndoStop();
-    insertText(editor, lines.join('\n'));
+    this.insertText(editor, lines.join('\n'));
     editor.pushUndoStop();
+  }
+
+  /**
+   * Insert lines of text into the editor at the current insertion point, matching indentation.
+   */
+  insertText (editor, text) {
+    // pad everything except the first line with indent
+    const indent = ' '.repeat(indentAtSelection(editor, editor.getSelection()));
+    const lines = text.split('\n');
+    for (let i = 1; i < lines.length; i++) {
+      lines[i] = indent + lines[i];
+    }
+
+    editor.executeEdits(this.language_id, [{
+      identifier: 'insert.text',
+      range: editor.getSelection(),
+      text: lines.join('\n'),
+    }]);
   }
 }
 
@@ -245,22 +263,4 @@ export function indentAtSelection (editor, sel) {
     indent = sel.startColumn - 1;
   }
   return indent;
-}
-
-/**
- * Insert lines of text into the editor at the current insertion point, matching indentation.
- */
-export function insertText (editor, text) {
-  // pad everything except the first line with indent
-  const indent = ' '.repeat(indentAtSelection(editor, editor.getSelection()));
-  const lines = text.split('\n');
-  for (let i = 1; i < lines.length; i++) {
-    lines[i] = indent + lines[i];
-  }
-
-  editor.executeEdits(this.language_id, [{
-    identifier: 'insert.text',
-    range: editor.getSelection(),
-    text: lines.join('\n'),
-  }]);
 }
