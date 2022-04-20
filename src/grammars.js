@@ -1,4 +1,4 @@
-import { tableToAkn } from "./html";
+import { htmlToAkn } from "./html";
 
 /**
  * Base class for grammar models.
@@ -51,7 +51,7 @@ export class GrammarModel {
             this.textTransform = new XSLTProcessor();
             this.textTransform.importStylesheet(xml);
             resolve();
-          })
+          });
         }
       });
     });
@@ -73,7 +73,7 @@ export class GrammarModel {
    */
   setupEditor (editor) {
     this.installActions(editor);
-    this.setupTablePasting(editor);
+    this.setupPasting(editor);
   }
 
   installLanguage () {
@@ -181,50 +181,33 @@ export class GrammarModel {
   }
 
   /**
-   * Setup pasting so that when the user pastes an HTML table we change it a grammar-supported table style.
-   *
-   * We cannot disable the Monaco editor paste functionality. Instead, we allow it to happen and then undo it
-   * if necessary, and replace the pasted text with the table.
+   * Setup pasting so that when the user pastes HTML we change it XML and then into grammar-friendly text.
    */
-  setupTablePasting (editor) {
-    editor.getDomNode().querySelector('textarea.inputarea').addEventListener('paste', (e) => {
-      const cb = e.clipboardData;
+  setupPasting (editor) {
+    editor.getDomNode().querySelector('textarea.inputarea').addEventListener('paste', (e) => this.onPaste(editor, e));
+  }
 
-      if (cb.types.indexOf('text/html') > -1) {
-        const doc = new DOMParser().parseFromString(cb.getData('text/html'), 'text/html'),
-          tables = doc.body.querySelectorAll('table'),
-          toPaste = [];
-
-        if (tables.length > 0) {
-          // undo the paste
-          editor.trigger(this.language_id, 'undo');
-
-          for (let i = 0; i < tables.length; i++) {
-            toPaste.push(tableToAkn(tables[i]));
-          }
-
-          this.pasteTables(editor, toPaste);
-        }
-      }
-    });
+  onPaste (editor, pasteEvent) {
+    const cb = pasteEvent.clipboardData;
+    if (cb.types.indexOf('text/html') > -1) {
+      const doc = new DOMParser().parseFromString(cb.getData('text/html'), 'text/html');
+      this.onPasteHtml(editor, doc);
+    }
   }
 
   /**
-   * Paste these (clean) XML tables into the editor.
+   * Handle pasting of a (parsed) HTML document.
+   *
+   * We cannot disable the Monaco editor paste functionality. Instead, we allow it to happen and then undo it
+   * if necessary, and replace the pasted text with our text.
    */
-  pasteTables (editor, tables) {
-    const text = [];
+  onPasteHtml (editor, doc) {
+    const xml = htmlToAkn(doc.body);
+    const lines = [...xml.children].map(root => this.xmlToText(root));
 
-    for (let i = 0; i < tables.length; i++) {
-      text.push(this.xmlToText(tables[i]));
-    }
-
+    editor.trigger(this.language_id, 'undo');
     editor.pushUndoStop();
-    editor.executeEdits(this.language_id, [{
-      identifier: 'insert.table',
-      range: editor.getSelection(),
-      text: text.join('\n'),
-    }]);
+    insertText(editor, lines.join('\n'));
     editor.pushUndoStop();
   }
 }
@@ -249,4 +232,35 @@ export function wrapSelection (editor, edit_source, id, pre, post) {
         .setStartPosition(sel.startLineNumber, sel.startColumn + pre.length)
       : sel.setEndPosition(sel.endLineNumber, sel.endColumn + pre.length + post.length));
   editor.executeEdits(edit_source, [op], [cursor]);
+}
+
+/**
+ * Returns the size of the indent, in spaces, at the given selection
+ */
+export function indentAtSelection (editor, sel) {
+  // indent is either the first non-whitespace character on the current line (ie. the indent of this line),
+  // or where the cursor is if there's no text on this line
+  let indent = editor.getModel().getLineFirstNonWhitespaceColumn(sel.startLineNumber) - 1;
+  if (indent < 0) {
+    indent = sel.startColumn - 1;
+  }
+  return indent;
+}
+
+/**
+ * Insert lines of text into the editor at the current insertion point, matching indentation.
+ */
+export function insertText (editor, text) {
+  // pad everything except the first line with indent
+  const indent = ' '.repeat(indentAtSelection(editor, editor.getSelection()));
+  const lines = text.split('\n');
+  for (let i = 1; i < lines.length; i++) {
+    lines[i] = indent + lines[i];
+  }
+
+  editor.executeEdits(this.language_id, [{
+    identifier: 'insert.text',
+    range: editor.getSelection(),
+    text: lines.join('\n'),
+  }]);
 }

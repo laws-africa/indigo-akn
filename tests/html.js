@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { tableToAkn } from "../src/html";
+import { htmlToAkn } from "../src/html";
 
-describe('tableToAkn', () => {
+describe('htmlToAkn', () => {
   describe('#cleanAttributes()', () => {
     it('should preserve column widths', () => {
       const domparser = new DOMParser();
@@ -37,7 +37,7 @@ describe('tableToAkn', () => {
 </table>
 `;
       const table_html = domparser.parseFromString(table_html_string, 'text/html');
-      const table_akn = tableToAkn(table_html);
+      const table_akn = htmlToAkn(table_html);
       const table_akn_string = xmlserializer.serializeToString(table_akn);
       expect(table_akn_string).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
 <th class="akn--text-center" style="width: 21.4684%;"><p>heading 1</p></th>
@@ -86,7 +86,7 @@ describe('tableToAkn', () => {
 </table>
 `;
       const table_html = domparser.parseFromString(table_html_string, 'text/html');
-      const table_akn = tableToAkn(table_html);
+      const table_akn = htmlToAkn(table_html);
       const table_akn_string = xmlserializer.serializeToString(table_akn);
       expect(table_akn_string).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
 <th class="akn--text-center" style="width: 21.4684%;"><p>heading 1</p></th>
@@ -100,7 +100,6 @@ describe('tableToAkn', () => {
 </tr></table>
 `);
     });
-
   });
 
   it('should preserve superscript and subscript tags', () => {
@@ -129,7 +128,7 @@ describe('tableToAkn', () => {
 </table>
 `;
       const table_html = domparser.parseFromString(table_html_string, 'text/html');
-      const table_akn = tableToAkn(table_html);
+      const table_akn = htmlToAkn(table_html);
       const table_akn_string = xmlserializer.serializeToString(table_akn);
       expect(table_akn_string).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
 <th><p>heading <sup>1</sup></p></th>
@@ -139,6 +138,33 @@ describe('tableToAkn', () => {
 <td><p>cell 2</p></td>
 </tr></table>
 `);
+  });
+
+  it('should ignore empty attributes', () => {
+    const domparser = new DOMParser();
+    const xmlserializer = new XMLSerializer();
+    const table_html_string = `
+  <table id="hcontainer_1__table_2" style="  ">
+  <tbody>
+  <tr>
+  <th style="  ">
+  <span class="akn-p">heading <sup>1</sup></span>
+  </th>
+  <td style="    ">
+  <span class="akn-p">cell 2</span>
+  </td>
+  </tr>
+  </tbody>
+  </table>
+  `;
+    const table_html = domparser.parseFromString(table_html_string, 'text/html');
+    const table_akn = htmlToAkn(table_html);
+    const table_akn_string = xmlserializer.serializeToString(table_akn);
+    expect(table_akn_string).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"><tr>
+  <th><p>heading <sup>1</sup></p></th>
+  <td><p>cell 2</p></td>
+  </tr></table>
+  `);
   });
 
 });

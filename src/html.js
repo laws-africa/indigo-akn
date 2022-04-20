@@ -47,12 +47,12 @@ export function htmlNodeToXmlNode (node) {
 }
 
 /**
- * Converts an HTML table element into an Akoma Ntoso XML table element.
+ * Converts an HTML element into an Akoma Ntoso XML element.
  */
-export function tableToAkn (table) {
-  function cleanTable(table) {
+export function htmlToAkn (html) {
+  function clean(html) {
     // strip out namespaced tags - we don't want MS Office's tags
-    const elems = table.getElementsByTagName("*");
+    const elems = html.getElementsByTagName("*");
     for (let i = 0; i < elems.length; i++) {
       const elem = elems[i];
 
@@ -87,10 +87,10 @@ export function tableToAkn (table) {
     });
   }
 
-  cleanTable(table);
+  clean(html);
 
   // html -> xhtml
-  let xml = htmlNodeToXmlNode(table);
+  let xml = htmlNodeToXmlNode(html);
 
   // xhtml -> akn
   xml = htmlToAknXslt.transformToFragment(xml.firstChild, xml);
