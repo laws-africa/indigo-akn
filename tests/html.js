@@ -1,9 +1,32 @@
 import { expect } from 'chai';
 import { htmlToAkn } from "../src/html";
 
-function convert(html) {
+function convert(html, ugly) {
   const element = new DOMParser().parseFromString(html, 'text/html');
-  return new XMLSerializer().serializeToString(htmlToAkn(element));
+  const akn = htmlToAkn(element);
+
+  if (ugly) {
+    return new XMLSerializer().serializeToString(akn);
+  } else {
+    return prettyify(akn);
+  }
+}
+
+const prettyXslt = new XSLTProcessor();
+prettyXslt.importStylesheet(new DOMParser().parseFromString(`<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:output method="xml" indent="yes" encoding="ISO-8859-1"/>
+
+<xsl:template match="@*|node( )">
+ <xsl:copy>
+  <xsl:apply-templates select="@*|node( )"/>
+ </xsl:copy>
+</xsl:template>
+
+</xsl:stylesheet>
+`, 'text/xml'));
+
+function prettyify(xml) {
+  return new XMLSerializer().serializeToString(prettyXslt.transformToDocument(xml));
 }
 
 describe('htmlToAkn', () => {
@@ -39,17 +62,11 @@ describe('htmlToAkn', () => {
 </tbody>
 </table>
 `);
-      expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
-<th class="akn--text-center" style="width: 21.4684%;"><p>heading 1</p></th>
-<th style="width: 78.3457%;"><p>heading 2</p></th>
-</tr><tr>
-<td style="width: 21.4684%;"><p>cell 1</p></td>
-<td style="width: 78.3457%;"><p>cell 2</p></td>
-</tr><tr>
-<td style="width: 21.4684%;"><p>cell 3</p></td>
-<td style="width: 78.3457%;"><p>cell 4</p></td>
-</tr></table>
-`);
+      expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2">
+  <tr> <th class="akn--text-center" style="width: 21.4684%;"><p>heading 1</p></th> <th style="width: 78.3457%;"><p>heading 2</p></th> </tr>
+  <tr> <td style="width: 21.4684%;"><p>cell 1</p></td> <td style="width: 78.3457%;"><p>cell 2</p></td> </tr>
+  <tr> <td style="width: 21.4684%;"><p>cell 3</p></td> <td style="width: 78.3457%;"><p>cell 4</p></td> </tr>
+</table>`);
     });
 
     it('should discard unwanted styles (everything other than width)', () => {
@@ -83,17 +100,11 @@ describe('htmlToAkn', () => {
 </tbody>
 </table>
 `);
-      expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
-<th class="akn--text-center" style="width: 21.4684%;"><p>heading 1</p></th>
-<th style="width: 78.3457%;"><p>heading 2</p></th>
-</tr><tr>
-<td style="width: 21.4684%;"><p>cell 1</p></td>
-<td style="width: 78.3457%;"><p>cell 2</p></td>
-</tr><tr>
-<td style="width: 21.4684%;"><p>cell 3</p></td>
-<td style="width: 78.3457%;"><p>cell 4</p></td>
-</tr></table>
-`);
+      expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2">
+  <tr> <th class="akn--text-center" style="width: 21.4684%;"><p>heading 1</p></th> <th style="width: 78.3457%;"><p>heading 2</p></th> </tr>
+  <tr> <td style="width: 21.4684%;"><p>cell 1</p></td> <td style="width: 78.3457%;"><p>cell 2</p></td> </tr>
+  <tr> <td style="width: 21.4684%;"><p>cell 3</p></td> <td style="width: 78.3457%;"><p>cell 4</p></td> </tr>
+</table>`);
     });
   });
 
@@ -120,14 +131,10 @@ describe('htmlToAkn', () => {
 </tbody>
 </table>
 `);
-      expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2"><tr>
-<th><p>heading <sup>1</sup></p></th>
-<th><p>heading <sub>2</sub></p></th>
-</tr><tr>
-<td><p>cell 1</p></td>
-<td><p>cell 2</p></td>
-</tr></table>
-`);
+      expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_2">
+  <tr> <th><p>heading <sup>1</sup></p></th> <th><p>heading <sub>2</sub></p></th> </tr>
+  <tr> <td><p>cell 1</p></td> <td><p>cell 2</p></td> </tr>
+</table>`);
   });
 
   it('should ignore empty attributes', () => {
@@ -145,11 +152,9 @@ describe('htmlToAkn', () => {
 </tbody>
 </table>
 `);
-    expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"><tr>
-<th><p>heading <sup>1</sup></p></th>
-<td><p>cell 2</p></td>
-</tr></table>
-`);
+    expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <tr> <th><p>heading <sup>1</sup></p></th> <td><p>cell 2</p></td> </tr>
+</table>`);
   });
 
   it('should strip meaningless whitespace', () => {
@@ -164,7 +169,7 @@ describe('htmlToAkn', () => {
        </p>
      </td>
    </tr>
- </table>`);
+ </table>`, true);
     expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"><tr> <td><p>some text with lots of whitespace</p></td> </tr></table>`);
   });
 });

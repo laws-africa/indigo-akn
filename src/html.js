@@ -34,7 +34,7 @@ export function htmlNodeToXmlString (node) {
 export function htmlNodeToXmlNode (node) {
   let str = htmlNodeToXmlString(node);
   // replace tabs and multiple whitespace with a single space
-  str = str.replace('\t', ' ').replace(/\s{2,}/g, ' ');
+  str = str.replace(/[\t\n]/g, ' ').replace(/\s{2,}/g, ' ');
   const xml = new DOMParser().parseFromString(str, "text/xml");
 
   if (!xml) throw "Invalid XML: " + str;
