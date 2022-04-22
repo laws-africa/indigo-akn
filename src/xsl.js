@@ -50,7 +50,7 @@ export const HTML_TO_AKN_XSL = `
     </p>
   </xsl:template>
 
-  <xsl:template match="html:b | html:br | html:i | html:sup | html:sub | html:u">
+  <xsl:template match="html:b | html:br | html:i | html:sup | html:sub | html:u | html:ul | html:li">
     <xsl:element name="{name(.)}">
       <xsl:apply-templates />
     </xsl:element>
@@ -78,7 +78,9 @@ export const HTML_TO_AKN_XSL = `
   <!-- attributes -->
 
   <xsl:template match="@colspan | @rowspan | @style | @class">
-    <xsl:attribute name="{name(.)}"><xsl:value-of select="." /></xsl:attribute>
+    <xsl:if test="normalize-space(.) != ''">
+      <xsl:attribute name="{name(.)}"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
   <!-- map data-id to id -->
