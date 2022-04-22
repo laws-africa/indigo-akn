@@ -189,7 +189,8 @@ export class GrammarModel {
 
   onPaste (editor, pasteEvent) {
     const cb = pasteEvent.clipboardData;
-    if (cb.types.indexOf('text/html') > -1) {
+    // if it's coming from the vscode editor, then don't mess with it
+    if (!cb.types.includes('vscode-editor-data') && cb.types.includes('text/html')) {
       const doc = new DOMParser().parseFromString(cb.getData('text/html'), 'text/html');
       this.onPasteHtml(editor, doc);
     }
@@ -203,7 +204,13 @@ export class GrammarModel {
    */
   onPasteHtml (editor, doc) {
     const xml = htmlToAkn(doc.body);
-    const lines = [...xml.children].map(root => this.xmlToText(root));
+    let lines;
+    if (xml.childElementCount === 0) {
+      // no children, just text
+      lines = [xml.textContent];
+    } else {
+      lines = [...xml.children].map(root => this.xmlToText(root));
+    }
 
     editor.trigger(this.language_id, 'undo');
     editor.pushUndoStop();
