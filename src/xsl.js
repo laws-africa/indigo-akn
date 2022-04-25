@@ -6,6 +6,9 @@ export const HTML_TO_AKN_XSL = `
 
   <xsl:output method="xml" />
 
+  <!-- ignore these elements -->
+  <xsl:template match="html:head | html:style | html:script | html:link" />
+
   <!-- tables -->
 
   <xsl:template match="html:table">
@@ -43,6 +46,12 @@ export const HTML_TO_AKN_XSL = `
   </xsl:template>
 
   <!-- elements -->
+  
+  <xsl:template match="html:div">
+    <p>
+      <xsl:apply-templates />
+    </p>
+  </xsl:template>
 
   <xsl:template match="html:p">
     <p>

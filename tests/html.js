@@ -172,4 +172,21 @@ describe('htmlToAkn', () => {
  </table>`, true);
     expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"><tr> <td><p>some text with lots of whitespace</p></td> </tr></table>`);
   });
+
+  it('should handle unstructured html', () => {
+    const akn = convert(`<div style="color: #000000;background-color: #fffffe;font-family: Menlo, Monaco, 'Courier New', monospace;font-weight: normal;font-size: 12px;line-height: 18px;white-space: pre;">
+<div><span style="color: #000000;">I want </span><span style="color: #000000;font-weight: bold;">**to**</span><span style="color: #000000;"> pas<em>te</em></span>
+</div></div>`, true);
+    expect(akn).to.eql(`<p xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"> <p>I want **to** paste </p></p>`);
+  });
+
+  it('should handle simple text ', () => {
+    const akn = convert(`<span>some text</span>`, true);
+    expect(akn).to.eql(`some text`);
+  });
+
+  it('should handle multi-line text ', () => {
+    const akn = convert(`<div><div>first</div><div>second</div></div>`, true);
+    expect(akn).to.eql(`<p xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"><p>first</p><p>second</p></p>`);
+  });
 });
