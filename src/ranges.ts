@@ -134,7 +134,7 @@ export function withoutForeignElements (root: Element, callback: () => any, sele
   const removed: RemovedElement[] = [];
 
   // remove the foreign elements
-  for (const elem of root.querySelectorAll(selector)) {
+  for (const elem of Array.from(root.querySelectorAll(selector))) {
     const info: RemovedElement = {
       e: elem,
       before: null,
