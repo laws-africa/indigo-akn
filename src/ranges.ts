@@ -197,8 +197,7 @@ export function targetToRange (target: IRangeTarget, root: Element): Range | nul
     } else {
       // no selectors, the anchor is the range
       const range = root.ownerDocument.createRange();
-      range.setStartBefore(anchor);
-      range.setEndAfter(anchor);
+      range.selectNodeContents(anchor);
       return range;
     }
   }
@@ -241,8 +240,7 @@ export function targetToAknRange (target: IRangeTarget, root: Element): Range | 
     } else {
       // no selectors, the anchor is the range
       const range = new Range();
-      range.setStartBefore(anchor);
-      range.setEndAfter(anchor);
+      range.selectNodeContents(anchor);
       return range;
     }
   }

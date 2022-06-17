@@ -46,7 +46,7 @@ export class GutterEnrichmentManager {
   createFloatingContainer () {
     const item = document.createElement('la-gutter-item');
     const btnGroup = document.createElement('div');
-    btnGroup.className = 'gutter-enrichment-new-buttons btn-group-vertical btn-group-sm';
+    btnGroup.className = 'gutter-enrichment-new-buttons btn-group-vertical btn-group-sm bg-white';
     item.appendChild(btnGroup);
     return item;
   }
