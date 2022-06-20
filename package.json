@@ -1,5 +1,5 @@
 {
-  "name": "@laws-africa/indigo-akn",
+  "name": "@lawsafrica/indigo-akn",
   "version": "5.1.0",
   "description": "Akoma Ntoso support libraries for the Indigo platform.",
   "main": "dist/index.js",
@@ -40,6 +40,6 @@
     "webpack-cli": "^4.9.2"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }
