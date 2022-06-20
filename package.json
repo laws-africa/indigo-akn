@@ -13,7 +13,7 @@
     "url": "git+https://github.com/laws-africa/indigo-akn.git"
   },
   "author": "Greg Kempe <greg@laws.africa>",
-  "license": "MIT",
+  "license": "LGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/laws-africa/indigo-akn/issues"
   },
