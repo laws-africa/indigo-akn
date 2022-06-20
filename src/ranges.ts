@@ -134,7 +134,7 @@ export function withoutForeignElements (root: Element, callback: () => any, sele
   const removed: RemovedElement[] = [];
 
   // remove the foreign elements
-  for (const elem of root.querySelectorAll(selector)) {
+  for (const elem of Array.from(root.querySelectorAll(selector))) {
     const info: RemovedElement = {
       e: elem,
       before: null,
@@ -197,8 +197,7 @@ export function targetToRange (target: IRangeTarget, root: Element): Range | nul
     } else {
       // no selectors, the anchor is the range
       const range = root.ownerDocument.createRange();
-      range.setStartBefore(anchor);
-      range.setEndAfter(anchor);
+      range.selectNodeContents(anchor);
       return range;
     }
   }
@@ -241,8 +240,7 @@ export function targetToAknRange (target: IRangeTarget, root: Element): Range | 
     } else {
       // no selectors, the anchor is the range
       const range = new Range();
-      range.setStartBefore(anchor);
-      range.setEndAfter(anchor);
+      range.selectNodeContents(anchor);
       return range;
     }
   }
