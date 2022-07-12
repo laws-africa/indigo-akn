@@ -13,6 +13,9 @@ export class GrammarModel {
     this.theme_def = {
       base: 'vs',
       inherit: true,
+      colors: {
+        'editor.foreground': '#000000'
+      }
     };
   }
 
