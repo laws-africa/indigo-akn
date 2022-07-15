@@ -1,7 +1,7 @@
 // @ts-ignore
 import { toRange as textPositionToRange, fromRange as textPositionFromRange } from 'dom-anchor-text-position';
 // @ts-ignore
-import { toRange as textQuoteToRange, fromTextPosition as textQuoteFromTextPosition } from 'dom-anchor-text-quote';
+import { toRange as textQuoteToRange, fromTextPosition as textQuoteFromTextPosition } from '@lawsafrica/dom-anchor-text-quote';
 
 // Selector for elements that are foreign to AKN documents, such as table editor buttons and annotations
 export const foreignElementsSelector = '.ig';
