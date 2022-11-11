@@ -319,3 +319,44 @@ export function rangeToTarget (range: Range, root: Element): IRangeTarget | null
 
   return target;
 }
+
+/**
+ * Given an XML document Range object, transform it into a target description
+ * suitable for use with annotations. Will not go above root, if given.
+ */
+export function aknRangeToTarget (range: Range, root: Element): IRangeTarget | null {
+  let anchor: Element | null = (range.commonAncestorContainer as Element);
+
+  // find the closest element to this anchor that has an id attribute
+  if (anchor.nodeType !== Node.ELEMENT_NODE) {
+    anchor = anchor.parentElement;
+    if (!anchor) {
+      return null;
+    }
+  }
+
+  anchor = anchor.closest('[eId]');
+  // bail if there's no anchor, or the anchor is outside of the root
+  if (!anchor || (anchor !== root && (anchor.compareDocumentPosition(root) & Node.DOCUMENT_POSITION_CONTAINS) === 0)) {
+    return null;
+  }
+
+  const target: IRangeTarget = {
+    anchor_id: anchor.getAttribute('eId') || '',
+    selectors: []
+  };
+
+  // position selector
+  let selector = textPositionFromRange(anchor, range);
+  selector.type = 'TextPositionSelector';
+  // @ts-ignore
+  target.selectors.push(selector);
+
+  // quote selector, based on the position
+  selector = textQuoteFromTextPosition(anchor, selector);
+  selector.type = 'TextQuoteSelector';
+  // @ts-ignore
+  target.selectors.push(selector);
+
+  return target;
+}
