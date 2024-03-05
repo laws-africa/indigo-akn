@@ -194,7 +194,14 @@ export class GrammarModel {
     const cb = pasteEvent.clipboardData;
     // if it's coming from the vscode editor, then don't mess with it
     if (!cb.types.includes('vscode-editor-data') && cb.types.includes('text/html')) {
-      const doc = new DOMParser().parseFromString(cb.getData('text/html'), 'text/html');
+      let doc;
+      try {
+        doc = new DOMParser().parseFromString(cb.getData('text/html'), 'text/html');
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+
       this.onPasteHtml(editor, doc);
     }
   }
@@ -206,13 +213,19 @@ export class GrammarModel {
    * if necessary, and replace the pasted text with our text.
    */
   onPasteHtml (editor, doc) {
-    const xml = htmlToAkn(doc.body);
     let lines;
-    if (xml.childElementCount === 0) {
-      // no children, just text
-      lines = [xml.textContent];
-    } else {
-      lines = [...xml.children].map(root => this.xmlToText(root));
+
+    try {
+      const xml = htmlToAkn(doc.body);
+      if (xml.childElementCount === 0) {
+        // no children, just text
+        lines = [xml.textContent];
+      } else {
+        lines = [...xml.children].map(root => this.xmlToText(root));
+      }
+    } catch (e) {
+      console.log(e);
+      return;
     }
 
     editor.trigger(this.language_id, 'undo');
