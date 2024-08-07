@@ -73,15 +73,15 @@ export class EidRewriter {
     // skip meta blocks
     let tag = element.tagName;
     if (tag === 'meta') {
-      return
+      return;
     }
 
     // don't generate an eId for `act`, `num`, etc
     if (!this.idExempt.includes(tag) && !this.idExemptButPassToChildren.includes(tag)) {
       let oldEid = element.getAttribute('eId') || '';
 
-      let num = (element.firstElementChild && element.firstElementChild.tagName === 'num')
-          ? element.firstElementChild.textContent : '';
+      let num = (element.firstElementChild && element.firstElementChild.tagName === 'num') ?
+          element.firstElementChild.textContent : '';
       let newEid = this.getEid(prefix, tag, num) || '';
 
       // update eId if changed
@@ -94,17 +94,17 @@ export class EidRewriter {
       }
 
       // use the new eId as the prefix if there is one, or keep using the same one
-      prefix = newEid || prefix
+      prefix = newEid || prefix;
     }
 
     // include the current tag in the prefix if needed
     if (this.idExemptButPassToChildren.includes(tag)) {
-      prefix = prefix ? `${prefix}__${tag.toLowerCase()}` : tag.toLowerCase()
+      prefix = prefix ? `${prefix}__${tag.toLowerCase()}` : tag.toLowerCase();
     }
 
     // keep drilling down
     for (let i = 0; i < element.children.length; i++) {
-      this.rewriteEid(element.children[i], prefix)
+      this.rewriteEid(element.children[i], prefix);
     }
   }
 
@@ -117,7 +117,7 @@ export class EidRewriter {
 
       // some elements are effectively unique and so don't need a differentiating number
       if (!this.idExemptButPassToChildren.includes(name)) {
-        let [num, nn] = this.getNum(prefix, name, naiveNum)
+        let [num, nn] = this.getNum(prefix, name, naiveNum);
         eId = this.ensureUnique(`${eId}_${num}`, nn);
       }
 
@@ -172,16 +172,17 @@ export class EidRewriter {
    */
   cleanNum (num) {
     return num.replace(this.leadingPunctRe, '')
-      .replace(this.trailingPunctRe, '')
-      .replace(this.whitespaceRe, '')
-      .replace(this.punctRe, '-');
+        .replace(this.trailingPunctRe, '')
+        .replace(this.whitespaceRe, '')
+        .replace(this.punctRe, '-');
   }
 
   incr (prefix, name) {
     let counter = this.counters[prefix] || (this.counters[prefix] = {}),
         count = counter[name] || 0;
+    counter[name] = count + 1;
 
-    return counter[name] = count + 1;
+    return counter[name];
   }
 
   /** Ensures a given eId is unique; adds the count to `nn` and non-unique eids.
@@ -193,5 +194,63 @@ export class EidRewriter {
       return eId;
     }
     return this.ensureUnique(`${eId}_${count}`, false);
+  }
+}
+
+export class WorkComponentRewriter {
+  constructor () {
+    this.counters = {};
+    this.skipElements = ['meta', 'preface', 'preamble', 'body', 'mainBody'];
+  }
+
+  /** Rewrites the FRBR URI work components for all attachment nodes in the tree.
+   */
+  rewriteAllAttachmentWorkComponents (element, prefix = '') {
+    this.counters = {};
+    this.rewriteAttachmentWorkComponent(element, prefix);
+  }
+
+  rewriteAttachmentWorkComponent (element, prefix = '') {
+    let tag = element.tagName;
+    if (this.skipElements.includes(tag)) {
+      return;
+    }
+
+    if (tag === 'attachment') {
+      let newName = this.getComponentName(element, prefix),
+          workComponents = element.getElementsByTagName('FRBRthis');
+      for (let x = 0; x < workComponents.length; x++) {
+        let oldURI = workComponents[x].getAttribute('value'),
+            oldName = oldURI ? oldURI.split('!').pop() : '';
+        if (oldName !== newName) {
+          let newURI = oldURI.replace(oldName, newName);
+          workComponents[x].setAttribute('value', newURI);
+        }
+      }
+      prefix = newName;
+    }
+
+    // keep drilling down
+    for (let i = 0; i < element.children.length; i++) {
+      this.rewriteAttachmentWorkComponent(element.children[i], prefix);
+    }
+  }
+
+  /** Derives the correct FRBR URI work component for an attachment based on its name, with 'attachment' as the default.
+   */
+  getComponentName (attachment, prefix = '') {
+    let doc = attachment.getElementsByTagName('doc')[0],
+        name = doc.getAttribute('name') || 'attachment',
+        num = this.incr(`__attachments`, prefix ? `${prefix}__${name}` : name);
+
+    return prefix ? `${prefix}/${name}_${num}` : `${name}_${num}`;
+  }
+
+  incr (prefix, name) {
+    let counter = this.counters[prefix] || (this.counters[prefix] = {}),
+        count = counter[name] || 0;
+    counter[name] = count + 1;
+
+    return counter[name];
   }
 }
