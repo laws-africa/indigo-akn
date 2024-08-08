@@ -1,4 +1,5 @@
 import { EidRewriter } from '../src/eids.js';
+import { WorkComponentRewriter } from '../src/eids.js';
 import { expect } from 'chai';
 
 describe('eIdRewriter', () => {
@@ -1015,6 +1016,1122 @@ describe('eIdRewriter', () => {
       expect(r.cleanNum("(א)")).to.equal("א");
       // chinese 3
       expect(r.cleanNum("(三)")).to.equal("三");
+    });
+  });
+});
+
+describe('WorkComponentRewriter', () => {
+  describe('#rewriteAllAttachmentWorkComponents()', () => {
+    it('should correctly assign work attachment components', () => {
+      const xml = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act name="act">
+    <meta>
+      <identification source="#Laws-Africa">
+        <FRBRWork>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+          <FRBRalias value="KwaZulu-Natal Liquor Licensing Regulations, 2013" name="title"/>
+          <FRBRdate date="2014" name="Generation"/>
+          <FRBRauthor href=""/>
+          <FRBRcountry value="za-kzn"/>
+          <FRBRsubtype value="pn"/>
+          <FRBRnumber value="45"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+          <FRBRdate date="2014-02-13" name="Generation"/>
+          <FRBRauthor href=""/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+          <FRBRdate date="2024-08-05" name="Generation"/>
+          <FRBRauthor href=""/>
+        </FRBRManifestation>
+      </identification>
+      <publication showAs="KwaZulu-Natal Provincial Gazette" name="KwaZulu-Natal Provincial Gazette" date="2014-02-13" number="1081"/>
+      <references source="#Laws-Africa">
+        <TLCOrganization eId="Laws-Africa" href="https://edit.laws.africa" showAs="Laws.Africa"/>
+      </references>
+    </meta>
+    <preface>
+      <p eId="preface__p_1">I hereby make the Regulations contained in the Schedule hereto under section 99 of the KwaZulu-Natal Liquor Licensing Act, 2010 (<ref href="/akn/za-kzn/act/2010/6" eId="preface__p_1__ref_1">Act No. 6 of 2010</ref>), in order to regulate liquor licensing matters in the Province.</p>
+    </preface>
+    <body>
+      <part eId="part_VIII">
+        <num>VIII</num>
+        <heading>General provisions</heading>
+        <section eId="part_VIII__sec_55">
+          <num>55.</num>
+          <heading>Short title</heading>
+          <content>
+            <p eId="part_VIII__sec_55__p_1">These Regulations are called the KwaZulu-Natal Liquor Licensing Regulations, 2013.</p>
+          </content>
+        </section>
+      </part>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Annexure A</heading>
+        <subheading>Application form</subheading>
+        <doc name="annexure">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure A" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_1__p_1">KZNLA 1</p>
+          </mainBody>
+        </doc>
+      </attachment>
+      <attachment eId="att_2">
+        <heading>Annexure B</heading>
+        <subheading>KwaZulu-Natal liquor licensing fees</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure B" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRsubtype value="pn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2014-02-13" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-05" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_2__p_1">KZNLA 2</p>
+          </mainBody>
+        </doc>
+      </attachment>
+      <attachment eId="att_12">
+        <heading>Annexure J</heading>
+        <subheading>Notice of intention to apply for special events liquor permit</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_11"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure J" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_12__p_1">KZNLA 10</p>
+          </mainBody>
+          <attachments>
+            <attachment eId="att_12__att_1">
+              <heading>1</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_11/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="1" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_1__p_1"/>
+                </mainBody>
+              </doc>
+            </attachment>
+            <attachment eId="att_12__att_2">
+              <heading>2</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_11/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="2" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_2__p_1"/>
+                </mainBody>
+                <attachments>
+                  <attachment eId="att_12__att_2__att_1">
+                    <heading>A</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_11/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="A" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_1__p_1"/>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                  <attachment eId="att_12__att_2__att_2">
+                    <heading>B</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_11/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="B" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_2__p_1"/>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                  <attachment eId="att_12__att_2__att_3">
+                    <heading>C</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_11/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="C" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_3__p_1">new content &lt;3</p>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                </attachments>
+              </doc>
+            </attachment>
+            <attachment eId="att_12__att_3">
+              <heading>4</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_11/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="4" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_11/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_3__p_1"/>
+                </mainBody>
+              </doc>
+            </attachment>
+          </attachments>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`;
+      const doc = new DOMParser().parseFromString(xml, "text/xml");
+      new WorkComponentRewriter().rewriteAllAttachmentWorkComponents(doc.documentElement);
+      expect(new XMLSerializer().serializeToString(doc)).to.equal(`<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act name="act">
+    <meta>
+      <identification source="#Laws-Africa">
+        <FRBRWork>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+          <FRBRalias value="KwaZulu-Natal Liquor Licensing Regulations, 2013" name="title"/>
+          <FRBRdate date="2014" name="Generation"/>
+          <FRBRauthor href=""/>
+          <FRBRcountry value="za-kzn"/>
+          <FRBRsubtype value="pn"/>
+          <FRBRnumber value="45"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+          <FRBRdate date="2014-02-13" name="Generation"/>
+          <FRBRauthor href=""/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+          <FRBRdate date="2024-08-05" name="Generation"/>
+          <FRBRauthor href=""/>
+        </FRBRManifestation>
+      </identification>
+      <publication showAs="KwaZulu-Natal Provincial Gazette" name="KwaZulu-Natal Provincial Gazette" date="2014-02-13" number="1081"/>
+      <references source="#Laws-Africa">
+        <TLCOrganization eId="Laws-Africa" href="https://edit.laws.africa" showAs="Laws.Africa"/>
+      </references>
+    </meta>
+    <preface>
+      <p eId="preface__p_1">I hereby make the Regulations contained in the Schedule hereto under section 99 of the KwaZulu-Natal Liquor Licensing Act, 2010 (<ref href="/akn/za-kzn/act/2010/6" eId="preface__p_1__ref_1">Act No. 6 of 2010</ref>), in order to regulate liquor licensing matters in the Province.</p>
+    </preface>
+    <body>
+      <part eId="part_VIII">
+        <num>VIII</num>
+        <heading>General provisions</heading>
+        <section eId="part_VIII__sec_55">
+          <num>55.</num>
+          <heading>Short title</heading>
+          <content>
+            <p eId="part_VIII__sec_55__p_1">These Regulations are called the KwaZulu-Natal Liquor Licensing Regulations, 2013.</p>
+          </content>
+        </section>
+      </part>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Annexure A</heading>
+        <subheading>Application form</subheading>
+        <doc name="annexure">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure A" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_1__p_1">KZNLA 1</p>
+          </mainBody>
+        </doc>
+      </attachment>
+      <attachment eId="att_2">
+        <heading>Annexure B</heading>
+        <subheading>KwaZulu-Natal liquor licensing fees</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure B" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRsubtype value="pn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2014-02-13" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-05" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_2__p_1">KZNLA 2</p>
+          </mainBody>
+        </doc>
+      </attachment>
+      <attachment eId="att_12">
+        <heading>Annexure J</heading>
+        <subheading>Notice of intention to apply for special events liquor permit</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure J" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_12__p_1">KZNLA 10</p>
+          </mainBody>
+          <attachments>
+            <attachment eId="att_12__att_1">
+              <heading>1</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="1" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_1__p_1"/>
+                </mainBody>
+              </doc>
+            </attachment>
+            <attachment eId="att_12__att_2">
+              <heading>2</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="2" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_2__p_1"/>
+                </mainBody>
+                <attachments>
+                  <attachment eId="att_12__att_2__att_1">
+                    <heading>A</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="A" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_1__p_1"/>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                  <attachment eId="att_12__att_2__att_2">
+                    <heading>B</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="B" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_2__p_1"/>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                  <attachment eId="att_12__att_2__att_3">
+                    <heading>C</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="C" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_3__p_1">new content &lt;3</p>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                </attachments>
+              </doc>
+            </attachment>
+            <attachment eId="att_12__att_3">
+              <heading>4</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="4" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_3__p_1"/>
+                </mainBody>
+              </doc>
+            </attachment>
+          </attachments>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`);
+    });
+
+    it('should not change a document with correct attachment components', () => {
+      const xml = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+  <act name="act">
+    <meta>
+      <identification source="#Laws-Africa">
+        <FRBRWork>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+          <FRBRalias value="KwaZulu-Natal Liquor Licensing Regulations, 2013" name="title"/>
+          <FRBRdate date="2014" name="Generation"/>
+          <FRBRauthor href=""/>
+          <FRBRcountry value="za-kzn"/>
+          <FRBRsubtype value="pn"/>
+          <FRBRnumber value="45"/>
+        </FRBRWork>
+        <FRBRExpression>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+          <FRBRdate date="2014-02-13" name="Generation"/>
+          <FRBRauthor href=""/>
+          <FRBRlanguage language="eng"/>
+        </FRBRExpression>
+        <FRBRManifestation>
+          <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!main"/>
+          <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+          <FRBRdate date="2024-08-05" name="Generation"/>
+          <FRBRauthor href=""/>
+        </FRBRManifestation>
+      </identification>
+      <publication showAs="KwaZulu-Natal Provincial Gazette" name="KwaZulu-Natal Provincial Gazette" date="2014-02-13" number="1081"/>
+      <references source="#Laws-Africa">
+        <TLCOrganization eId="Laws-Africa" href="https://edit.laws.africa" showAs="Laws.Africa"/>
+      </references>
+    </meta>
+    <preface>
+      <p eId="preface__p_1">I hereby make the Regulations contained in the Schedule hereto under section 99 of the KwaZulu-Natal Liquor Licensing Act, 2010 (<ref href="/akn/za-kzn/act/2010/6" eId="preface__p_1__ref_1">Act No. 6 of 2010</ref>), in order to regulate liquor licensing matters in the Province.</p>
+    </preface>
+    <body>
+      <part eId="part_VIII">
+        <num>VIII</num>
+        <heading>General provisions</heading>
+        <section eId="part_VIII__sec_55">
+          <num>55.</num>
+          <heading>Short title</heading>
+          <content>
+            <p eId="part_VIII__sec_55__p_1">These Regulations are called the KwaZulu-Natal Liquor Licensing Regulations, 2013.</p>
+          </content>
+        </section>
+      </part>
+    </body>
+    <attachments>
+      <attachment eId="att_1">
+        <heading>Annexure A</heading>
+        <subheading>Application form</subheading>
+        <doc name="annexure">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure A" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!annexure_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_1__p_1">KZNLA 1</p>
+          </mainBody>
+        </doc>
+      </attachment>
+      <attachment eId="att_2">
+        <heading>Annexure B</heading>
+        <subheading>KwaZulu-Natal liquor licensing fees</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure B" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRsubtype value="pn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2014-02-13" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_1"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-05" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_2__p_1">KZNLA 2</p>
+          </mainBody>
+        </doc>
+      </attachment>
+      <attachment eId="att_12">
+        <heading>Annexure J</heading>
+        <subheading>Notice of intention to apply for special events liquor permit</subheading>
+        <doc name="schedule">
+          <meta>
+            <identification source="#Laws-Africa">
+              <FRBRWork>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                <FRBRalias value="Annexure J" name="title"/>
+                <FRBRdate date="2014" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRcountry value="za-kzn"/>
+                <FRBRnumber value="45"/>
+              </FRBRWork>
+              <FRBRExpression>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+                <FRBRlanguage language="eng"/>
+              </FRBRExpression>
+              <FRBRManifestation>
+                <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2"/>
+                <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                <FRBRdate date="2024-08-07" name="Generation"/>
+                <FRBRauthor href=""/>
+              </FRBRManifestation>
+            </identification>
+          </meta>
+          <mainBody>
+            <p eId="att_12__p_1">KZNLA 10</p>
+          </mainBody>
+          <attachments>
+            <attachment eId="att_12__att_1">
+              <heading>1</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="1" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_1"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_1__p_1"/>
+                </mainBody>
+              </doc>
+            </attachment>
+            <attachment eId="att_12__att_2">
+              <heading>2</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="2" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_2__p_1"/>
+                </mainBody>
+                <attachments>
+                  <attachment eId="att_12__att_2__att_1">
+                    <heading>A</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="A" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_1"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_1__p_1"/>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                  <attachment eId="att_12__att_2__att_2">
+                    <heading>B</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="B" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_2"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_2__p_1"/>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                  <attachment eId="att_12__att_2__att_3">
+                    <heading>C</heading>
+                    <doc name="schedule">
+                      <meta>
+                        <identification source="#Laws-Africa">
+                          <FRBRWork>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                            <FRBRalias value="C" name="title"/>
+                            <FRBRdate date="2014" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRcountry value="za-kzn"/>
+                            <FRBRnumber value="45"/>
+                          </FRBRWork>
+                          <FRBRExpression>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                            <FRBRlanguage language="eng"/>
+                          </FRBRExpression>
+                          <FRBRManifestation>
+                            <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_2/schedule_3"/>
+                            <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                            <FRBRdate date="2024-08-07" name="Generation"/>
+                            <FRBRauthor href=""/>
+                          </FRBRManifestation>
+                        </identification>
+                      </meta>
+                      <mainBody>
+                        <p eId="att_12__att_2__att_3__p_1">new content &lt;3</p>
+                      </mainBody>
+                    </doc>
+                  </attachment>
+                </attachments>
+              </doc>
+            </attachment>
+            <attachment eId="att_12__att_3">
+              <heading>4</heading>
+              <doc name="annexure">
+                <meta>
+                  <identification source="#Laws-Africa">
+                    <FRBRWork>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/!schedule_2/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45"/>
+                      <FRBRalias value="4" name="title"/>
+                      <FRBRdate date="2014" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRcountry value="za-kzn"/>
+                      <FRBRnumber value="45"/>
+                    </FRBRWork>
+                    <FRBRExpression>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                      <FRBRlanguage language="eng"/>
+                    </FRBRExpression>
+                    <FRBRManifestation>
+                      <FRBRthis value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13/!schedule_2/annexure_3"/>
+                      <FRBRuri value="/akn/za-kzn/act/pn/2014/45/eng@2014-02-13"/>
+                      <FRBRdate date="2024-08-07" name="Generation"/>
+                      <FRBRauthor href=""/>
+                    </FRBRManifestation>
+                  </identification>
+                </meta>
+                <mainBody>
+                  <p eId="att_12__att_3__p_1"/>
+                </mainBody>
+              </doc>
+            </attachment>
+          </attachments>
+        </doc>
+      </attachment>
+    </attachments>
+  </act>
+</akomaNtoso>`;
+      const doc = new DOMParser().parseFromString(xml, "text/xml");
+      new WorkComponentRewriter().rewriteAllAttachmentWorkComponents(doc.documentElement);
+      expect(new XMLSerializer().serializeToString(doc)).to.equal(xml);
     });
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@lawsafrica/indigo-akn",
-  "version": "5.3.1",
+  "version": "5.4.0",
   "description": "Akoma Ntoso support libraries for the Indigo platform.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
