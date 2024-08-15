@@ -29,6 +29,7 @@ export class GrammarModel {
       language: this.language_id,
       lineDecorationsWidth: 0,
       lineNumbersMinChars: 3,
+      pasteAs: {enabled: false},
       roundedSelection: false,
       scrollBeyondLastLine: false,
       showFoldingControls: 'always',
