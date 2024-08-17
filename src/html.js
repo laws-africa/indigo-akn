@@ -165,8 +165,7 @@ export function htmlToAkn (html) {
   }
 
   // add missing rows and cells to tables
-  // TODO: better check for this?
-  if (html.tagName === "TABLE") {
+  if (xml.firstChild.tagName === "table") {
     fixTable(xml.firstChild);
   }
 

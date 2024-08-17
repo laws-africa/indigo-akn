@@ -189,4 +189,40 @@ describe('htmlToAkn', () => {
     const akn = convert(`<div><div>first</div><div>second</div></div>`, true);
     expect(akn).to.eql(`<p xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"><p>first</p><p>second</p></p>`);
   });
+
+  it('should insert missing rows and cells as required to get a clean table matrix', () => {
+    const akn = convert(`<table id="hcontainer_1__table_1" data-eid="hcontainer_1__table_1">
+<tbody><tr>
+<th><span id="hcontainer_1__table_1__p_1" data-eid="hcontainer_1__table_1__p_1">Heading 1</span></th>
+<th><span id="hcontainer_1__table_1__p_2" data-eid="hcontainer_1__table_1__p_2">Heading 2</span></th>
+</tr>
+<tr>
+<td class="akn-td" rowspan="5" colspan="1"><span id="hcontainer_1__table_1__p_3" data-eid="hcontainer_1__table_1__p_3">&nbsp;</span></td>
+<td class="akn-td" rowspan="2" colspan="1"><span id="hcontainer_1__table_1__p_4" data-eid="hcontainer_1__table_1__p_4">&nbsp;</span></td>
+</tr>
+<tr><td class="akn-td"><span id="hcontainer_1__table_1__p_5" data-eid="hcontainer_1__table_1__p_5">&nbsp;</span></td></tr>
+<tr>
+<td class="akn-td"><span id="hcontainer_1__table_1__p_6" data-eid="hcontainer_1__table_1__p_6">Content 1</span></td>
+<td class="akn-td"><span id="hcontainer_1__table_1__p_7" data-eid="hcontainer_1__table_1__p_7">Content 2</span></td>
+</tr>
+</tbody></table>`);
+    expect(akn).to.eql(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_1">
+  <tr> <th><p>Heading 1</p></th> <th><p>Heading 2</p></th> <td/></tr>
+  <tr> <td class="akn-td" rowspan="5" colspan="1"><p/></td> <td class="akn-td" rowspan="2" colspan="1"><p/></td> <td/></tr>
+  <tr>
+    <td class="akn-td">
+      <p/>
+    </td>
+  </tr>
+  <tr> <td class="akn-td"><p>Content 1</p></td> <td class="akn-td"><p>Content 2</p></td> </tr>
+  <tr>
+    <td/>
+    <td/>
+  </tr>
+  <tr>
+    <td/>
+    <td/>
+  </tr>
+</table>`);
+  });
 });
