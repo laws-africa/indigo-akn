@@ -89,8 +89,45 @@ export function htmlToAkn (html) {
     });
   }
 
+  clean(html);
+
+  // html -> xhtml
+  let xml = htmlNodeToXmlNode(html);
+
+  // xhtml -> akn
+  xml = htmlToAknXslt.transformToFragment(xml.firstChild, xml);
+  if (!xml) {
+    console.log("htmlTransform.transformToFragment returned null, input was: ", table.outerHTML);
+    return null;
+  }
+
+  // strip whitespace at start of first p tag in table cells
+  xml.querySelectorAll('table td > p:first-child, table th > p:first-child').forEach(p => {
+    const text = p.firstChild;
+
+    if (text && text.nodeType === text.TEXT_NODE) {
+      text.textContent = text.textContent.replace(/^\s+/, '');
+    }
+  });
+
+  // strip whitespace at end of last p tag in table cells
+  xml.querySelectorAll('table td > p:last-child, table th > p:last-child').forEach(p => {
+    const text = p.lastChild;
+
+    if (text && text.nodeType === text.TEXT_NODE) {
+      text.textContent = text.textContent.replace(/\s+$/, '');
+    }
+  });
+
+  return xml;
+}
+
+/**
+ * Fixes all tables in a list of Akoma Ntoso XML elements.
+ */
+export function fixTables (elementList) {
   function fixTable(table) {
-    let xmlns = table.getAttribute('xmlns'),
+    let xmlns = table.namespaceURI,
         tableMap = mapTable(table),
         nMappedRows = Object.keys(tableMap).length;
 
@@ -108,11 +145,11 @@ export function htmlToAkn (html) {
           row = table.children[r];
       for (let m = 0; m < nMissingCells; m++) {
         console.log("adding a missing cell to table ", table.getAttribute('eId'), " row ", r);
-        row.appendChild(document.createElementNS(xmlns, 'td'));
+        let cell = document.createElementNS(xmlns, 'td');
+        cell.appendChild(document.createElementNS(xmlns, 'p'));
+        row.appendChild(cell);
       }
     }
-
-    return table;
   }
 
   function mapTable(table) {
@@ -152,40 +189,10 @@ export function htmlToAkn (html) {
     return matrix;
   }
 
-  clean(html);
-
-  // html -> xhtml
-  let xml = htmlNodeToXmlNode(html);
-
-  // xhtml -> akn
-  xml = htmlToAknXslt.transformToFragment(xml.firstChild, xml);
-  if (!xml) {
-    console.log("htmlTransform.transformToFragment returned null, input was: ", table.outerHTML);
-    return null;
-  }
-
-  // add missing rows and cells to tables
-  if (xml.firstChild.tagName === "table") {
-    fixTable(xml.firstChild);
-  }
-
-  // strip whitespace at start of first p tag in table cells
-  xml.querySelectorAll('table td > p:first-child, table th > p:first-child').forEach(p => {
-    const text = p.firstChild;
-
-    if (text && text.nodeType === text.TEXT_NODE) {
-      text.textContent = text.textContent.replace(/^\s+/, '');
+  for (let i = 0; i < elementList.length; i++) {
+    let tableList = elementList[i].querySelectorAll("table");
+    for (let t = 0; t < tableList.length; t++) {
+      fixTable(tableList[t]);
     }
-  });
-
-  // strip whitespace at end of last p tag in table cells
-  xml.querySelectorAll('table td > p:last-child, table th > p:last-child').forEach(p => {
-    const text = p.lastChild;
-
-    if (text && text.nodeType === text.TEXT_NODE) {
-      text.textContent = text.textContent.replace(/\s+$/, '');
-    }
-  });
-
-  return xml;
+  }
 }
