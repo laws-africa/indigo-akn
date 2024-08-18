@@ -1,4 +1,5 @@
 import { htmlToAkn } from "./html";
+import { fixTables } from "./xml";
 
 /**
  * Base class for grammar models.
@@ -218,6 +219,7 @@ export class GrammarModel {
 
     try {
       const xml = htmlToAkn(doc.body);
+      fixTables([xml]);
       if (xml.childElementCount === 0) {
         // no children, just text
         lines = [xml.textContent];
