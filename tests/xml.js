@@ -1,173 +1,157 @@
 import { expect } from 'chai';
-import { fixTables, fixTable, mapTable } from "../src/xml";
+import { mapTable, fixTable, fixTables } from "../src/xml";
+
+describe('mapTable', () => {
+  it('should return an accurate map of a table, taking all colspans and rowspans into account', () => {
+    const xml = `<table eId="hcontainer_1__table_1">
+<tr>
+  <th>
+    <p eId="hcontainer_1__table_1__p_1">Heading 1</p>
+  </th>
+  <th>
+    <p eId="hcontainer_1__table_1__p_2">Heading 2</p>
+  </th>
+</tr>
+<tr>
+  <td rowspan="5" colspan="1">
+    <p eId="hcontainer_1__table_1__p_3"/>
+  </td>
+  <td rowspan="2" colspan="1">
+    <p eId="hcontainer_1__table_1__p_4"/>
+  </td>
+</tr>
+<tr>
+  <td>
+    <p eId="hcontainer_1__table_1__p_5"/>
+  </td>
+</tr>
+<tr>
+  <td>
+    <p eId="hcontainer_1__table_1__p_6">Content 1</p>
+  </td>
+  <td>
+    <p eId="hcontainer_1__table_1__p_7">Content 2</p>
+  </td>
+</tr>
+</table>`;
+    const doc = new DOMParser().parseFromString(xml, "text/xml");
+    const table = doc.querySelector('table');
+    const tableMap = mapTable(table);
+    expect(tableMap).to.deep.equal({
+      "0": {
+        "0": true, "1": true
+      },
+      "1": {
+        "0": true, "1": true
+      },
+      "2": {
+        "0": true, "1": true, "2": true
+      },
+      "3": {
+        "0": true, "1": true, "2": true
+      },
+      "4": {
+        "0": true
+      },
+      "5": {
+        "0": true
+      }
+    });
+  });
+});
+
+describe('fixTable', () => {
+  it('should insert missing rows and cells as required to get a clean table matrix', () => {
+    const xml = `<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_1">
+<tr>
+  <th>
+    <p eId="hcontainer_1__table_1__p_1">Heading 1</p>
+  </th>
+  <th>
+    <p eId="hcontainer_1__table_1__p_2">Heading 2</p>
+  </th>
+</tr>
+<tr>
+  <td rowspan="5" colspan="1">
+    <p eId="hcontainer_1__table_1__p_3"/>
+  </td>
+  <td rowspan="2" colspan="1">
+    <p eId="hcontainer_1__table_1__p_4"/>
+  </td>
+</tr>
+<tr>
+  <td>
+    <p eId="hcontainer_1__table_1__p_5"/>
+  </td>
+</tr>
+<tr>
+  <td>
+    <p eId="hcontainer_1__table_1__p_6">Content 1</p>
+  </td>
+  <td>
+    <p eId="hcontainer_1__table_1__p_7">Content 2</p>
+  </td>
+</tr>
+</table>`;
+    const doc = new DOMParser().parseFromString(xml, "text/xml");
+    const table = doc.querySelector('table');
+    fixTable(table);
+    expect(new XMLSerializer().serializeToString(table)).to.equal(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_1">
+<tr>
+  <th>
+    <p eId="hcontainer_1__table_1__p_1">Heading 1</p>
+  </th>
+  <th>
+    <p eId="hcontainer_1__table_1__p_2">Heading 2</p>
+  </th>
+<td><p/></td></tr>
+<tr>
+  <td rowspan="5" colspan="1">
+    <p eId="hcontainer_1__table_1__p_3"/>
+  </td>
+  <td rowspan="2" colspan="1">
+    <p eId="hcontainer_1__table_1__p_4"/>
+  </td>
+<td><p/></td></tr>
+<tr>
+  <td>
+    <p eId="hcontainer_1__table_1__p_5"/>
+  </td>
+</tr>
+<tr>
+  <td>
+    <p eId="hcontainer_1__table_1__p_6">Content 1</p>
+  </td>
+  <td>
+    <p eId="hcontainer_1__table_1__p_7">Content 2</p>
+  </td>
+</tr>
+<tr><td><p/></td><td><p/></td></tr><tr><td><p/></td><td><p/></td></tr></table>`);
+    const tableMap = mapTable(table);
+    expect(tableMap).to.deep.equal({
+      "0": {
+        "0": true, "1": true, "2": true
+      },
+      "1": {
+        "0": true, "1": true, "2": true
+      },
+      "2": {
+        "0": true, "1": true, "2": true
+      },
+      "3": {
+        "0": true, "1": true, "2": true
+      },
+      "4": {
+        "0": true, "1": true, "2": true
+      },
+      "5": {
+        "0": true, "1": true, "2": true
+      }
+    });
+  });
+});
 
 describe('fixTables', () => {
-  describe('#mapTable()', () => {
-    it('should return an accurate map of a table, taking all colspans and rowspans into account', () => {
-      const xml = `<table eId="hcontainer_1__table_1">
-  <tr>
-    <th>
-      <p eId="hcontainer_1__table_1__p_1">Heading 1</p>
-    </th>
-    <th>
-      <p eId="hcontainer_1__table_1__p_2">Heading 2</p>
-    </th>
-  </tr>
-  <tr>
-    <td rowspan="5" colspan="1">
-      <p eId="hcontainer_1__table_1__p_3"/>
-    </td>
-    <td rowspan="2" colspan="1">
-      <p eId="hcontainer_1__table_1__p_4"/>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <p eId="hcontainer_1__table_1__p_5"/>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <p eId="hcontainer_1__table_1__p_6">Content 1</p>
-    </td>
-    <td>
-      <p eId="hcontainer_1__table_1__p_7">Content 2</p>
-    </td>
-  </tr>
-</table>`;
-      const doc = new DOMParser().parseFromString(xml, "text/xml");
-      const table = doc.querySelector('table');
-      const tableMap = mapTable(table);
-      expect(tableMap).to.equal({
-  "0": {
-    "0": true,
-    "1": true
-  },
-  "1": {
-    "0": true,
-    "1": true
-  },
-  "2": {
-    "0": true,
-    "1": true,
-    "2": true
-  },
-  "3": {
-    "0": true,
-    "1": true,
-    "2": true
-  },
-  "4": {
-    "0": true
-  },
-  "5": {
-    "0": true
-  }
-      });
-    });
-  });
-  describe('#fixTable()', () => {
-    it('should insert missing rows and cells as required to get a clean table matrix', () => {
-      const xml = `<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_1">
-  <tr>
-    <th>
-      <p eId="hcontainer_1__table_1__p_1">Heading 1</p>
-    </th>
-    <th>
-      <p eId="hcontainer_1__table_1__p_2">Heading 2</p>
-    </th>
-  </tr>
-  <tr>
-    <td rowspan="5" colspan="1">
-      <p eId="hcontainer_1__table_1__p_3"/>
-    </td>
-    <td rowspan="2" colspan="1">
-      <p eId="hcontainer_1__table_1__p_4"/>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <p eId="hcontainer_1__table_1__p_5"/>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <p eId="hcontainer_1__table_1__p_6">Content 1</p>
-    </td>
-    <td>
-      <p eId="hcontainer_1__table_1__p_7">Content 2</p>
-    </td>
-  </tr>
-</table>`;
-      const doc = new DOMParser().parseFromString(xml, "text/xml");
-      const table = doc.querySelector('table');
-      fixTable(table);
-      expect(new XMLSerializer().serializeToString(table)).to.equal(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_1">
-  <tr>
-    <th>
-      <p eId="hcontainer_1__table_1__p_1">Heading 1</p>
-    </th>
-    <th>
-      <p eId="hcontainer_1__table_1__p_2">Heading 2</p>
-    </th>
-  <td><p/></td></tr>
-  <tr>
-    <td rowspan="5" colspan="1">
-      <p eId="hcontainer_1__table_1__p_3"/>
-    </td>
-    <td rowspan="2" colspan="1">
-      <p eId="hcontainer_1__table_1__p_4"/>
-    </td>
-  <td><p/></td></tr>
-  <tr>
-    <td>
-      <p eId="hcontainer_1__table_1__p_5"/>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <p eId="hcontainer_1__table_1__p_6">Content 1</p>
-    </td>
-    <td>
-      <p eId="hcontainer_1__table_1__p_7">Content 2</p>
-    </td>
-  </tr>
-<tr><td><p/></td><td><p/></td></tr><tr><td><p/></td><td><p/></td></tr></table>`);
-      const tableMap = mapTable(table);
-      expect(tableMap).to.equal({
-  "0": {
-    "0": true,
-    "1": true,
-    "2": true
-  },
-  "1": {
-    "0": true,
-    "1": true,
-    "2": true
-  },
-  "2": {
-    "0": true,
-    "1": true,
-    "2": true
-  },
-  "3": {
-    "0": true,
-    "1": true,
-    "2": true
-  },
-  "4": {
-    "0": true,
-    "1": true,
-    "2": true
-  },
-  "5": {
-    "0": true,
-    "1": true,
-    "2": true
-  }
-      });
-    });
-  });
   it('should fix all tables, and not change correct tables', () => {
     const xml = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
   <act name="act">
