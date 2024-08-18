@@ -42,6 +42,14 @@ export function mapTable(table) {
  * Fixes a table by inserting missing rows and cells to match the table's matrix.
  */
 export function fixTable(table) {
+    // remove empty rows before starting
+    for (let r = 0; r < table.children.length; r++) {
+      let row = table.children[r];
+      if (!row.children.length) {
+        table.removeChild(row);
+      }
+    }
+
     let xmlns = table.namespaceURI,
         tableMap = mapTable(table),
         nMappedRows = Object.keys(tableMap).length;
