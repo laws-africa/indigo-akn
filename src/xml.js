@@ -30,6 +30,10 @@ export function mapTable(table) {
           if (!matrix[yy]) {
             matrix[yy] = {};
           }
+          // don't try to make overlapping spans work
+          if (matrix[yy][xx] === true) {
+            throw "Cannot parse overlapping spans in table with eId " + table.getAttribute("eId");
+          }
           matrix[yy][xx] = true;
         }
       }
