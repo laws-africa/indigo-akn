@@ -46,62 +46,62 @@ export function mapTable(table) {
  * Fixes a table by inserting missing rows and cells to match the table's matrix.
  */
 export function fixTable(table) {
-    // track the fixes
-    let removedRow = false,
-        addedRow = false,
-        addedCell = false;
-    // remove empty rows before starting
-    for (let r = 0; r < table.children.length; r++) {
-      let row = table.children[r];
-      if (!row.children.length) {
-        table.removeChild(row);
-        removedRow = true;
-      }
-    }
-
-    let xmlns = table.namespaceURI,
-        tableMap = mapTable(table),
-        nMappedRows = Object.keys(tableMap).length;
-
-    // add missing rows
-    let nMissingRows = nMappedRows - table.children.length;
-    for (let y = 0; y < nMissingRows; y++) {
-      console.log("adding a missing row to table ", table.getAttribute('eId'));
-      table.appendChild(document.createElementNS(xmlns, 'tr'));
-      addedRow = true;
-    }
-
-    // add missing cells
-    let nMaxMappedColumns = Math.max(...Object.values(tableMap).map(r => Object.keys(r).length));
-    for (let r = 0; r < table.children.length; r++) {
-      let nMissingCells = nMaxMappedColumns - Object.keys(tableMap[r]).length,
-          row = table.children[r];
-      for (let m = 0; m < nMissingCells; m++) {
-        console.log("adding a missing cell to table ", table.getAttribute('eId'), " row ", r);
-        let cell = document.createElementNS(xmlns, 'td');
-        cell.appendChild(document.createElementNS(xmlns, 'p'));
-        row.appendChild(cell);
-        addedCell = true;
-      }
-    }
-
-    // report fixes
-    if (removedRow || addedRow || addedCell) {
-      let fixes = [];
-      if (removedRow) {
-        fixes.push("removed empty row(s)");
-      }
-      if (addedRow) {
-        fixes.push("added missing row(s)");
-      }
-      if (addedCell) {
-        fixes.push("added missing cell(s)");
-      }
-      return `Table with eId ${table.getAttribute('eId')}: ${fixes.join(", ")}`;
-    } else {
-      return null;
+  // track the fixes
+  let removedRow = false,
+      addedRow = false,
+      addedCell = false;
+  // remove empty rows before starting
+  for (let r = 0; r < table.children.length; r++) {
+    let row = table.children[r];
+    if (!row.children.length) {
+      table.removeChild(row);
+      removedRow = true;
     }
   }
+
+  let xmlns = table.namespaceURI,
+      tableMap = mapTable(table),
+      nMappedRows = Object.keys(tableMap).length;
+
+  // add missing rows
+  let nMissingRows = nMappedRows - table.children.length;
+  for (let y = 0; y < nMissingRows; y++) {
+    console.log("adding a missing row to table ", table.getAttribute('eId'));
+    table.appendChild(document.createElementNS(xmlns, 'tr'));
+    addedRow = true;
+  }
+
+  // add missing cells
+  let nMaxMappedColumns = Math.max(...Object.values(tableMap).map(r => Object.keys(r).length));
+  for (let r = 0; r < table.children.length; r++) {
+    let nMissingCells = nMaxMappedColumns - Object.keys(tableMap[r]).length,
+        row = table.children[r];
+    for (let m = 0; m < nMissingCells; m++) {
+      console.log("adding a missing cell to table ", table.getAttribute('eId'), " row ", r);
+      let cell = document.createElementNS(xmlns, 'td');
+      cell.appendChild(document.createElementNS(xmlns, 'p'));
+      row.appendChild(cell);
+      addedCell = true;
+    }
+  }
+
+  // report fixes
+  if (removedRow || addedRow || addedCell) {
+    let fixes = [];
+    if (removedRow) {
+      fixes.push("removed empty row(s)");
+    }
+    if (addedRow) {
+      fixes.push("added missing row(s)");
+    }
+    if (addedCell) {
+      fixes.push("added missing cell(s)");
+    }
+    return `Table with eId ${table.getAttribute('eId')}: ${fixes.join(", ")}`;
+  } else {
+    return null;
+  }
+}
 
 /**
  * Fixes all tables in a list of Akoma Ntoso XML elements.
