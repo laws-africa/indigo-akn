@@ -1,4 +1,5 @@
 import { htmlToAkn } from "./html";
+import { fixTables } from "./xml";
 
 /**
  * Base class for grammar models.
