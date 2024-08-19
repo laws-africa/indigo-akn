@@ -46,11 +46,16 @@ export function mapTable(table) {
  * Fixes a table by inserting missing rows and cells to match the table's matrix.
  */
 export function fixTable(table) {
+    // track the fixes
+    let removedRow = false,
+        addedRow = false,
+        addedCell = false;
     // remove empty rows before starting
     for (let r = 0; r < table.children.length; r++) {
       let row = table.children[r];
       if (!row.children.length) {
         table.removeChild(row);
+        removedRow = true;
       }
     }
 
@@ -63,6 +68,7 @@ export function fixTable(table) {
     for (let y = 0; y < nMissingRows; y++) {
       console.log("adding a missing row to table ", table.getAttribute('eId'));
       table.appendChild(document.createElementNS(xmlns, 'tr'));
+      addedRow = true;
     }
 
     // add missing cells
@@ -75,7 +81,25 @@ export function fixTable(table) {
         let cell = document.createElementNS(xmlns, 'td');
         cell.appendChild(document.createElementNS(xmlns, 'p'));
         row.appendChild(cell);
+        addedCell = true;
       }
+    }
+
+    // report fixes
+    if (removedRow || addedRow || addedCell) {
+      let fixes = [];
+      if (removedRow) {
+        fixes.push("removed empty row(s)");
+      }
+      if (addedRow) {
+        fixes.push("added missing row(s)");
+      }
+      if (addedCell) {
+        fixes.push("added missing cell(s)");
+      }
+      return `Table with eId ${table.getAttribute('eId')}: ${fixes.join(", ")}`;
+    } else {
+      return null;
     }
   }
 
@@ -83,10 +107,13 @@ export function fixTable(table) {
  * Fixes all tables in a list of Akoma Ntoso XML elements.
  */
 export function fixTables (elementList) {
+  let fixedTables = [];
   for (let i = 0; i < elementList.length; i++) {
     let tableList = elementList[i].querySelectorAll("table");
     for (let t = 0; t < tableList.length; t++) {
-      fixTable(tableList[t]);
+      let fixed = fixTable(tableList[t]);
+      if (fixed) {fixedTables.push(fixed);}
     }
   }
+  return fixedTables;
 }

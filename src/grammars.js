@@ -219,7 +219,6 @@ export class GrammarModel {
 
     try {
       const xml = htmlToAkn(doc.body);
-      fixTables([xml]);
       if (xml.childElementCount === 0) {
         // no children, just text
         lines = [xml.textContent];
