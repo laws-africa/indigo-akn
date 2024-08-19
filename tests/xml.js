@@ -95,7 +95,7 @@ describe('fixTable', () => {
 </table>`;
     const doc = new DOMParser().parseFromString(xml, "text/xml");
     const table = doc.querySelector('table');
-    fixTable(table);
+    let fixed = fixTable(table);
     expect(new XMLSerializer().serializeToString(table)).to.equal(`<table xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0" eId="hcontainer_1__table_1">
 <tr>
   <th>
@@ -148,6 +148,7 @@ describe('fixTable', () => {
         "0": true, "1": true, "2": true
       }
     });
+    expect(fixed).to.equal("Table with eId hcontainer_1__table_1: added missing row(s), added missing cell(s)");
   });
 });
 
@@ -341,7 +342,7 @@ describe('fixTables', () => {
   </act>
 </akomaNtoso>`;
     const doc = new DOMParser().parseFromString(xml, "text/xml");
-    fixTables([doc.documentElement]);
+    let fixedTables = fixTables([doc.documentElement]);
     expect(new XMLSerializer().serializeToString(doc)).to.equal(`<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
   <act name="act">
     <meta>
@@ -529,6 +530,11 @@ describe('fixTables', () => {
     </body>
   </act>
 </akomaNtoso>`);
+    expect(fixedTables).to.deep.equal([
+        "Table with eId hcontainer_1__table_1: added missing row(s), added missing cell(s)",
+        "Table with eId part_1__table_1: added missing row(s), added missing cell(s)",
+        "Table with eId part_2__table_1: added missing cell(s)"
+    ]);
   });
   it('should handle empty rows and more examples of bad spans', () => {
     const xml = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
@@ -1337,7 +1343,7 @@ describe('fixTables', () => {
   </act>
 </akomaNtoso>`;
     const doc = new DOMParser().parseFromString(xml, "text/xml");
-    fixTables([doc.documentElement]);
+    let fixedTables = fixTables([doc.documentElement]);
     expect(new XMLSerializer().serializeToString(doc)).to.equal(`<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
   <act name="act">
     <meta/>
@@ -2143,6 +2149,14 @@ describe('fixTables', () => {
     </body>
   </act>
 </akomaNtoso>`);
+    expect(fixedTables).to.deep.equal([
+        "Table with eId att_1__table_2: removed empty row(s), added missing row(s), added missing cell(s)",
+        "Table with eId att_2__table_1: added missing cell(s)",
+        "Table with eId att_2__table_2: added missing cell(s)",
+        "Table with eId att_3__table_1: added missing cell(s)",
+        "Table with eId att_23__table_1: added missing cell(s)",
+        "Table with eId att_22__table_1: added missing cell(s)"
+    ]);
   });
   it('should throw an error when there are overlapping spans', () => {
     const xml = `<akomaNtoso xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
