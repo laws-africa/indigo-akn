@@ -1,5 +1,5 @@
 export class EidRewriter {
-  constructor () {
+  constructor (counters, eIdCounter) {
     this.numExpected = [
       'alinea', 'article', 'book', 'chapter', 'clause', 'division', 'indent', 'item', 'level', 'list', 'paragraph', 'part', 'point', 'proviso', 'rule', 'section', 'subchapter', 'subclause', 'subdivision', 'sublist', 'subparagraph', 'subpart', 'subrule', 'subsection', 'subtitle', 'title', 'tome', 'transitional'
     ];
@@ -56,15 +56,15 @@ export class EidRewriter {
     this.idExemptButPassToChildren = [
       'arguments', 'background', 'conclusions', 'decision', 'header', 'intro', 'introduction', 'motivation', 'preamble', 'preface', 'remedies', 'wrapUp',
     ];
-    this.counters = {};
-    this.eIdCounter = {};
+    this.counters = counters || {};
+    this.eIdCounter = eIdCounter || {};
     this.mappings = {};
   }
 
   /** Rewrites the eIds for all nodes in the tree.
    */
   rewriteAllEids (element, prefix = '') {
-    this.reset();
+    this.reset(this.counters, this.eIdCounter);
     this.rewriteEid(element, prefix);
     return this.mappings;
   }
@@ -143,9 +143,9 @@ export class EidRewriter {
     return [num, nn];
   }
 
-  reset () {
-    this.counters = {};
-    this.eIdCounter = {};
+  reset (counters, eIdCounter) {
+    this.counters = counters || {};
+    this.eIdCounter = eIdCounter || {};
     this.mappings = {};
   }
 
