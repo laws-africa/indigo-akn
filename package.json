@@ -19,25 +19,30 @@
   },
   "homepage": "https://github.com/laws-africa/indigo-akn#readme",
   "dependencies": {
-    "dom-anchor-text-position": "^5.0.0",
     "@lawsafrica/dom-anchor-text-quote": "^5.0.0",
+    "dom-anchor-text-position": "^5.0.0",
     "he": "^1.2.0",
     "tippy.js": "^6.3.7"
   },
   "devDependencies": {
-    "chai": "^4.3.6",
+    "chai": "^6.2.2",
     "copyfiles": "^2.4.1",
     "karma": "^6.4.0",
-    "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^3.1.1",
     "karma-cli": "^2.0.0",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "karma-webpack": "^5.0.0",
-    "mocha": "^9.2.2",
-    "typescript": "^4.7.3",
+    "mocha": "^11.7.6",
+    "typescript": "^6.0.3",
     "webpack": "^5.72.0",
-    "webpack-cli": "^4.9.2"
+    "webpack-cli": "^7.0.3"
+  },
+  "overrides": {
+    "mocha": {
+      "diff": "^8.0.4",
+      "serialize-javascript": "^7.0.5"
+    }
   },
   "publishConfig": {
     "access": "public"
