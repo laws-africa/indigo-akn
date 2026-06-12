@@ -1,8 +1,8 @@
 module.exports = function(config) {
   config.set({
-    frameworks: ['mocha', 'chai'],
+    frameworks: ['mocha'],
     files: ['tests/**/*.js'],
-    plugins: ['karma-webpack', 'karma-chrome-launcher', 'karma-mocha', 'karma-chai', 'karma-mocha-reporter'],
+    plugins: ['karma-webpack', 'karma-chrome-launcher', 'karma-mocha', 'karma-mocha-reporter'],
     webpack: require('./webpack.test.config'),
     preprocessors: {
       'tests/**/*.js': ['webpack'],
