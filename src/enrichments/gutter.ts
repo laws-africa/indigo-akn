@@ -46,7 +46,7 @@ export class GutterEnrichmentManager {
   createFloatingContainer () {
     const item = document.createElement('la-gutter-item');
     const btnGroup = document.createElement('div');
-    btnGroup.className = 'gutter-enrichment-new-buttons btn-group-vertical btn-group-sm bg-white';
+    btnGroup.className = 'gutter-enrichment-new-buttons btn-group-vertical bg-white';
     item.appendChild(btnGroup);
     return item;
   }
@@ -85,6 +85,8 @@ export class GutterEnrichmentManager {
           if (!this.gutter.contains(this.floatingContainer)) {
             this.gutter.appendChild(this.floatingContainer);
           }
+
+          this.floatingContainer.setAttribute('active', 'active');
         } else {
           this.removeFloater();
         }
