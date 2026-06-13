@@ -20,7 +20,7 @@ export interface ISelectionToolbarContext {
   root: Element;
 }
 
-export interface ISelectionToolbarManagerOptions {
+export interface ISelectionToolbarOptions {
   debounceDelay?: number;
   btnGroupClassName?: string;
   shouldShow?: (context: ISelectionToolbarContext) => boolean;
@@ -28,10 +28,11 @@ export interface ISelectionToolbarManagerOptions {
 
 /**
  * This class handles showing a popup toolbar when the user selects text in the document body. Providers can
- * register themselves with addProvider, using the same interface as the gutter element provider.
+ * register themselves with addProvider to have an opportunity to add buttons to the toolbar when the selection
+ * changes.
  */
-export class SelectionToolbarManager {
-  protected static defaultOptions: Required<ISelectionToolbarManagerOptions> = {
+export class SelectionToolbar {
+  protected static defaultOptions: Required<ISelectionToolbarOptions> = {
     debounceDelay: 200,
     btnGroupClassName: 'btn-group btn-group-sm bg-light',
     shouldShow: () => true,
@@ -43,12 +44,12 @@ export class SelectionToolbarManager {
   protected popup: Tippy;
   protected target: IRangeTarget | null = null;
   protected range: Range | null = null;
-  protected options: Required<ISelectionToolbarManagerOptions>;
+  protected options: Required<ISelectionToolbarOptions>;
 
-  constructor (root: Element, options: ISelectionToolbarManagerOptions = {}) {
+  constructor (root: Element, options: ISelectionToolbarOptions = {}) {
     this.root = root;
     this.options = {
-      ...SelectionToolbarManager.defaultOptions,
+      ...SelectionToolbar.defaultOptions,
       ...options,
     };
     this.providers = [];
