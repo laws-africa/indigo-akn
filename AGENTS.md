@@ -9,10 +9,11 @@ Guidance for AI coding agents working in this repository.
 ## Common Commands
 
 - Install dependencies: `npm install`
-- Run tests: `npm test`
+- Build and run tests: `npm run build-test`
+- Run tests only: `npm test`
 - Build package output: `npm run build`
 
-The test suite is run through Karma using Chrome, Mocha, and Chai. The build command removes and regenerates `dist/`; do not hand-edit generated files in `dist/`.
+The test suite is run through Karma using Chrome, Mocha, and Chai. The build command removes and regenerates `dist/`; do not hand-edit generated files in `dist/`. Prefer `npm run build-test` for verification because tests may import built package output from `dist/`.
 
 ## Repository Layout
 
@@ -35,7 +36,7 @@ The test suite is run through Karma using Chrome, Mocha, and Chai. The build com
 
 Before handing off code changes, run the narrowest useful check:
 
-- For behavior changes, run `npm test`.
+- For behavior changes, run `npm run build-test`.
 - For build or packaging changes, run `npm run build`.
 - If you cannot run a relevant command, report why and describe the remaining risk.
 
