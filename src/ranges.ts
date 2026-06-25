@@ -176,15 +176,19 @@ export function withoutForeignElements (root: Element, callback: () => any, sele
  * @param root root element to look within
  */
 export function targetToRange (target: IRangeTarget, root: Element): Range | null {
+  function find (id: string): Element | null {
+    return root.querySelector(`[id="${id}"], [data-eid="${id}"]`);
+  }
+
   let anchorId = target.anchor_id;
   let ix = anchorId.lastIndexOf('__');
-  let anchor = root.querySelector(`[id="${anchorId}"]`);
+  let anchor = find(anchorId);
 
   // do our best to find the anchor node, going upwards up the id chain if the id has components
   while (!anchor && ix > -1) {
     anchorId = anchorId.substring(0, ix);
     ix = anchorId.lastIndexOf('__');
-    anchor = root.querySelector(`[id="${anchorId}"]`);
+    anchor = find(anchorId);
   }
 
   if (anchor) {
@@ -292,14 +296,15 @@ export function rangeToTarget (range: Range, root: Element): IRangeTarget | null
     }
   }
 
-  anchor = anchor.closest('[id]');
+  // look for either an id or data-eid attribute, preferring data-eid if both are present
+  anchor = anchor.closest('[id], [data-eid]');
   // bail if there's no anchor, or the anchor is outside of the root
   if (!anchor || (anchor !== root && (anchor.compareDocumentPosition(root) & Node.DOCUMENT_POSITION_CONTAINS) === 0)) {
     return null;
   }
 
   const target: IRangeTarget = {
-    anchor_id: anchor.id,
+    anchor_id: anchor.getAttribute('data-eid') || anchor.id,
     selectors: []
   };
 
