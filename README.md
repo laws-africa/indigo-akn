@@ -18,7 +18,9 @@ npm install @lawsafrica/indigo-akn
 ## Running tests
 
 1. Install dependencies: `npm install`
-2. Run tests: `npm test`
+2. Build and run tests: `npm run build-test`
+
+`npm run build-test` regenerates `dist/` before running the browser test suite. Use `npm test` only when `dist/` is already up to date.
 
 ## Releasing a new version
 
