@@ -4,13 +4,13 @@ export class EidRewriter {
       'alinea', 'article', 'book', 'chapter', 'clause', 'division', 'indent', 'item', 'level', 'list', 'paragraph', 'part', 'point', 'proviso', 'rule', 'section', 'subchapter', 'subclause', 'subdivision', 'sublist', 'subparagraph', 'subpart', 'subrule', 'subsection', 'subtitle', 'title', 'tome', 'transitional'
     ];
     // leading whitespace and punctuation
-    this.leadingPunctRe = /^[\s\u2000-\u206f\u2e00-\u2e7f!"#$%&'()*+,\-.\/:;<=>?@\[\]^_`{|}~]+/g;
+    this.leadingPunctRe = /^[\s\u2000-\u206f\u2e00-\u2e7f!"#$%&'()*+,\-.\/:;<=>?@\[\\\]^_`{|}~]+/g;
     // trailing whitespace and punctuation
-    this.trailingPunctRe = /[\s\u2000-\u206f\u2e00-\u2e7f!"#$%&'()*+,\-.\/:;<=>?@\[\]^_`{|}~]+$/g;
+    this.trailingPunctRe = /[\s\u2000-\u206f\u2e00-\u2e7f!"#$%&'()*+,\-.\/:;<=>?@\[\\\]^_`{|}~]+$/g;
     // whitespace
     this.whitespaceRe = /\s/g;
     // general punctuation
-    this.punctRe = /[\u2000-\u206f\u2e00-\u2e7f!"#$%&'()*+,\-.\/:;<=>?@\[\]^_`{|}~]+/g;
+    this.punctRe = /[\u2000-\u206f\u2e00-\u2e7f!"#$%&'()*+,\-.\/:;<=>?@\[\\\]^_`{|}~]+/g;
     this.idExempt = [
       'akomaNtoso', 'act', 'amendment', 'amendmentList', 'bill', 'debate', 'debateReport', 'doc', 'documentCollection', 'judgment', 'officialGazette', 'portion', 'statement',
       'amendmentBody', 'attachments', 'body', 'collectionBody', 'components', 'coverPage', 'debateBody', 'judgmentBody', 'mainBody', 'meta', 'portionBody',

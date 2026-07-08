@@ -1008,6 +1008,11 @@ describe('eIdRewriter', () => {
       expect(r.cleanNum("3a bis")).to.equal("3abis");
       expect(r.cleanNum("3é")).to.equal("3é");
       expect(r.cleanNum(" -3a--4,9")).to.equal("3a-4-9");
+
+      // backslashes are punctuation, too
+      expect(r.cleanNum("5\\")).to.equal("5");
+      expect(r.cleanNum("\\5")).to.equal("5");
+      expect(r.cleanNum("5\\6")).to.equal("5-6");
     });
 
     it('should handle non-arabic numerals', () => {

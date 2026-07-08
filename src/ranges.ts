@@ -177,7 +177,7 @@ export function withoutForeignElements (root: Element, callback: () => any, sele
  */
 export function targetToRange (target: IRangeTarget, root: Element): Range | null {
   function find (id: string): Element | null {
-    return root.querySelector(`[id="${id}"], [data-eid="${id}"]`);
+    return root.querySelector(`[id="${CSS.escape(id)}"], [data-eid="${CSS.escape(id)}"]`);
   }
 
   let anchorId = target.anchor_id;
@@ -224,7 +224,7 @@ export function targetToAknRange (target: IRangeTarget, root: Element): Range | 
     if (id === 'arguments') {
       return root.querySelector(id);
     } else {
-      return root.querySelector(`[eId=${id}]`);
+      return root.querySelector(`[eId="${CSS.escape(id)}"]`);
     }
   }
   let anchorId = target.anchor_id;
