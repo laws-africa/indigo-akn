@@ -16,15 +16,17 @@ describe('GrammarModel', () => {
       window.XSLTProcessor = originalProcessor;
     });
 
-    it('should reject when XSLT is unavailable', async () => {
+    it('should reject when stylesheet initialization fails', async () => {
       window.fetch = async () => ({ ok: true, text: async () => '<stylesheet/>' });
-      window.XSLTProcessor = undefined;
+      window.XSLTProcessor = class {
+        importStylesheet() { throw new Error('Invalid stylesheet'); }
+      };
       const grammar = new GrammarModel(null, '/grammar.xsl');
       try {
         await grammar.setup();
         throw new Error('Expected setup to reject');
       } catch (error) {
-        expect(error).to.be.instanceOf(TypeError);
+        expect(error.message).to.equal('Invalid stylesheet');
         expect(grammar.textTransform).to.equal(undefined);
       }
     });

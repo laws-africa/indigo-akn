@@ -1,3 +1,4 @@
+import { createXsltProcessor } from "../src/xslt";
 import { expect } from 'chai';
 import { htmlToAkn } from "../src/html";
 
@@ -12,7 +13,7 @@ function convert(html, ugly) {
   }
 }
 
-const prettyXslt = new XSLTProcessor();
+const prettyXslt = createXsltProcessor();
 prettyXslt.importStylesheet(new DOMParser().parseFromString(`<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="xml" indent="yes" encoding="ISO-8859-1"/>
 
