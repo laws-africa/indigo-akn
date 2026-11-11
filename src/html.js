@@ -1,8 +1,21 @@
 import { HTML_TO_AKN_XSL } from "./xsl";
 import { decode } from 'he';
 
-export const htmlToAknXslt = new XSLTProcessor();
-htmlToAknXslt.importStylesheet(new DOMParser().parseFromString(HTML_TO_AKN_XSL, 'text/xml'));
+// Keep the public processor object, but do not require XSLT merely to import
+// this module. Resolve the constructor at first use so a polyfill can load later.
+let htmlTransform;
+export const htmlToAknXslt = new Proxy({}, {
+  get (target, property) {
+    if (!htmlTransform) {
+      const processor = new XSLTProcessor();
+      processor.importStylesheet(new DOMParser().parseFromString(HTML_TO_AKN_XSL, 'text/xml'));
+      htmlTransform = processor;
+    }
+    const value = Reflect.get(htmlTransform, property, htmlTransform);
+    // Native processor methods must be called with the real processor as this.
+    return typeof value === 'function' ? value.bind(htmlTransform) : value;
+  }
+});
 
 /**
  * Serialize an HTML node to an XML string.

@@ -48,17 +48,16 @@ export class GrammarModel {
    */
   setup () {
     // setup akn to text transform
-    return new Promise(resolve => {
-      fetch(new Request(this.xslUrl)).then(response => {
-        if (response.ok) {
-          response.text().then(text => {
-            const xml = new DOMParser().parseFromString(text, 'text/xml');
-            this.textTransform = new XSLTProcessor();
-            this.textTransform.importStylesheet(xml);
-            resolve();
-          });
-        }
-      });
+    return fetch(new Request(this.xslUrl)).then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to load XSL: ' + response.status);
+      }
+      return response.text();
+    }).then(text => {
+      const xml = new DOMParser().parseFromString(text, 'text/xml');
+      const processor = new XSLTProcessor();
+      processor.importStylesheet(xml);
+      this.textTransform = processor;
     });
   }
 
