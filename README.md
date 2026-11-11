@@ -46,3 +46,18 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+## XSLT processors
+
+Use `createXsltProcessor()` from this package instead of constructing a browser
+`XSLTProcessor` directly. It returns a fresh processor synchronously, using native
+XSLT when construction succeeds and the bundled `xslt-polyfill` WASM implementation
+otherwise. Stylesheet import, parameters and transformations use the standard
+processor methods. Importing the package does not initialize the WASM engine.
+
+The fallback currently installs the upstream package's browser globals on first
+use; callers should still go through the factory. It disables automatic XML-page
+transformation. Browser Content Security Policy must allow WASM compilation
+(`wasm-unsafe-eval` in `script-src`, where a CSP is configured). Synchronous
+stylesheet imports/includes and `document()` that require additional network
+requests are not supported by this fallback; use self-contained stylesheets.

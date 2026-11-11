@@ -1,3 +1,4 @@
+import { createXsltProcessor } from "./xslt";
 import { HTML_TO_AKN_XSL } from "./xsl";
 import { decode } from 'he';
 
@@ -7,7 +8,7 @@ let htmlTransform;
 export const htmlToAknXslt = new Proxy({}, {
   get (target, property) {
     if (!htmlTransform) {
-      const processor = new XSLTProcessor();
+      const processor = createXsltProcessor();
       processor.importStylesheet(new DOMParser().parseFromString(HTML_TO_AKN_XSL, 'text/xml'));
       htmlTransform = processor;
     }

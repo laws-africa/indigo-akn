@@ -1,3 +1,4 @@
+import { createXsltProcessor } from "./xslt";
 import { htmlToAkn } from "./html";
 import { fixTables } from "./xml";
 
@@ -55,7 +56,7 @@ export class GrammarModel {
       return response.text();
     }).then(text => {
       const xml = new DOMParser().parseFromString(text, 'text/xml');
-      const processor = new XSLTProcessor();
+      const processor = createXsltProcessor();
       processor.importStylesheet(xml);
       this.textTransform = processor;
     });
