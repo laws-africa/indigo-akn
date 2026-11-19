@@ -61,3 +61,13 @@ transformation. Browser Content Security Policy must allow WASM compilation
 (`wasm-unsafe-eval` in `script-src`, where a CSP is configured). Synchronous
 stylesheet imports/includes and `document()` that require additional network
 requests are not supported by this fallback; use self-contained stylesheets.
+
+## Table formatting conversion
+
+HTML-to-AKN conversion preserves authored table, cell and paragraph classes,
+including `akn--text-*` and `akn--no-padding`. Structural `akn-*` rendering
+classes and CKEditor selection classes are excluded. Separate classified
+paragraphs inside a cell remain separate paragraphs. Nested tables contribute
+only their own rows. The legacy `fontsize` attribute is not imported from HTML; editor controls
+should use size classes. Indigo preserves any existing XML override directly
+when replacing the source table.

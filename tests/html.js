@@ -31,6 +31,39 @@ function prettyify(xml) {
 }
 
 describe('htmlToAkn', () => {
+  it('does not import legacy fontsize attributes from HTML', () => {
+    const xml = convert('<table fontsize="9"><tr><td fontsize="8"><p fontsize="7">Text</p></td></tr></table>', true);
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    expect(doc.querySelector('[fontsize]')).to.equal(null);
+    expect(doc.documentElement.textContent).to.equal('Text');
+  });
+
+  it('preserves table, cell and paragraph formatting without structural classes', () => {
+    const xml = convert(`<table class="akn-table custom akn--text-small akn--no-padding" data-eid="table_1"><tr>
+      <td class="akn-td akn--text-right"><span class="akn-p akn--text-normal akn--text-left" data-eid="p_1">First</span><p class="akn--text-xsmall">Second</p></td>
+    </tr></table>`, true);
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    expect(doc.documentElement.getAttribute('class')).to.equal('custom akn--text-small akn--no-padding');
+    expect(doc.querySelector('td').getAttribute('class')).to.equal('akn--text-right');
+    expect(doc.querySelectorAll('td > p').length).to.equal(2);
+    expect(doc.querySelector('p').getAttribute('class')).to.equal('akn--text-normal akn--text-left');
+    expect(doc.querySelector('p').getAttribute('eId')).to.equal('p_1');
+    expect(doc.querySelectorAll('p')[1].getAttribute('class')).to.equal('akn--text-xsmall');
+  });
+
+  it('preserves inline runs around classified paragraphs and nested table boundaries', () => {
+    const xml = convert(`<table><tr><td>Before <b>bold</b><p class="akn--text-small">Middle</p>After <i>italic</i>
+      <table class="akn--no-padding"><tr><td>Nested</td></tr></table>End</td></tr></table>`, true);
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    const outer = doc.documentElement;
+    expect(outer.children.length).to.equal(1);
+    const cell = outer.children[0].children[0];
+    expect(Array.from(cell.children).map(el => el.localName)).to.deep.equal(['p', 'p', 'p', 'table', 'p']);
+    expect(cell.children[0].textContent).to.equal('Before bold');
+    expect(cell.children[2].textContent.trim()).to.equal('After italic');
+    expect(cell.children[4].textContent).to.equal('End');
+  });
+
   describe('#cleanAttributes()', () => {
     it('should preserve column widths', () => {
       const akn = convert(`
