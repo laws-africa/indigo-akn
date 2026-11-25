@@ -13,7 +13,7 @@ export const HTML_TO_AKN_XSL = `
 
   <xsl:template match="html:table">
     <table>
-      <xsl:apply-templates select="@data-eid | //html:tr" />
+      <xsl:apply-templates select="@data-eid | @class | .//html:tr[generate-id(ancestor::html:table[1]) = generate-id(current())]" />
     </table>
   </xsl:template>
 
@@ -27,7 +27,24 @@ export const HTML_TO_AKN_XSL = `
 		<xsl:element name="{name(.)}">
       <xsl:apply-templates select="@colspan | @rowspan | @style | @class" />
 
-      <p>
+      <xsl:choose>
+        <!-- Keep paragraph boundaries and classes when the editor receives
+             structured paragraphs. Bare inline cell content remains one p. -->
+        <xsl:when test="html:p or html:span[contains(concat(' ', normalize-space(@class), ' '), ' akn-p ')] or html:table">
+          <xsl:for-each select="node()">
+            <xsl:choose>
+              <xsl:when test="self::html:p or self::html:span[contains(concat(' ', normalize-space(@class), ' '), ' akn-p ')]">
+                <p><xsl:apply-templates select="@class | @data-eid | node()"/></p>
+              </xsl:when>
+              <xsl:when test="self::html:table"><xsl:apply-templates select="."/></xsl:when>
+              <xsl:when test="(self::* or normalize-space(.)) and not(preceding-sibling::node()[self::* or normalize-space(.)][1][not(self::html:p or self::html:span[contains(concat(' ', normalize-space(@class), ' '), ' akn-p ')] or self::html:table)])">
+                <xsl:variable name="previous-block" select="generate-id(preceding-sibling::*[self::html:p or self::html:span[contains(concat(' ', normalize-space(@class), ' '), ' akn-p ')] or self::html:table][1])"/>
+                <p><xsl:apply-templates select=". | following-sibling::node()[not(self::html:p or self::html:span[contains(concat(' ', normalize-space(@class), ' '), ' akn-p ')] or self::html:table)][generate-id(preceding-sibling::*[self::html:p or self::html:span[contains(concat(' ', normalize-space(@class), ' '), ' akn-p ')] or self::html:table][1]) = $previous-block]"/></p>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise><p>
         <xsl:for-each select="node()">
           <xsl:choose>
             <xsl:when test="name(.) = 'p'">
@@ -40,7 +57,8 @@ export const HTML_TO_AKN_XSL = `
             </xsl:otherwise>
           </xsl:choose>
         </xsl:for-each>
-      </p>
+      </p></xsl:otherwise>
+      </xsl:choose>
 
     </xsl:element>
   </xsl:template>
@@ -55,6 +73,7 @@ export const HTML_TO_AKN_XSL = `
 
   <xsl:template match="html:p">
     <p>
+      <xsl:apply-templates select="@class | @data-eid"/>
       <xsl:apply-templates />
     </p>
   </xsl:template>
@@ -86,7 +105,20 @@ export const HTML_TO_AKN_XSL = `
 
   <!-- attributes -->
 
-  <xsl:template match="@colspan | @rowspan | @style | @class">
+  <xsl:template match="@class">
+    <xsl:variable name="classes"><xsl:call-template name="authored-classes"><xsl:with-param name="classes" select="normalize-space(.)"/></xsl:call-template></xsl:variable>
+    <xsl:if test="normalize-space($classes) != ''"><xsl:attribute name="class"><xsl:value-of select="normalize-space($classes)"/></xsl:attribute></xsl:if>
+  </xsl:template>
+
+  <!-- Structural akn-* classes come from rendering, not source markup. -->
+  <xsl:template name="authored-classes">
+    <xsl:param name="classes"/>
+    <xsl:variable name="first" select="substring-before(concat($classes, ' '), ' ')"/>
+    <xsl:if test="$first != '' and (not(starts-with($first, 'akn-')) or starts-with($first, 'akn--')) and not(starts-with($first, 'cke_'))"><xsl:value-of select="$first"/><xsl:text> </xsl:text></xsl:if>
+    <xsl:if test="contains($classes, ' ')"><xsl:call-template name="authored-classes"><xsl:with-param name="classes" select="substring-after($classes, ' ')"/></xsl:call-template></xsl:if>
+  </xsl:template>
+
+  <xsl:template match="@colspan | @rowspan | @style">
     <xsl:if test="normalize-space(.) != ''">
       <xsl:attribute name="{name(.)}"><xsl:value-of select="." /></xsl:attribute>
     </xsl:if>
